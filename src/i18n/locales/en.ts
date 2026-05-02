@@ -16,6 +16,9 @@ export const en = [
   'New Task',
   'New Team',
   'Tasks',
+  'Chats',
+  'Starred',
+  'Unread',
   'Teams',
   'Settings',
   'Agents',
@@ -470,6 +473,19 @@ export const en = [
 
   // Local LLM Loading Indicator
   'Initializing Local AI Model…',
+  'Downloading model',
+  'Model loaded',
+  'Model load failed',
+  'Initializing model',
+
+  // Transcript / Frames view
+  'Model',
+  'User',
+  'Tool',
+  'Tool use',
+  'Tool result',
+  'No events',
+  'Select an event to view details',
 
   // Agent Memory System
   'Agent Memory',

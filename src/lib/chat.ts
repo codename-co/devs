@@ -43,6 +43,7 @@ export interface PendingToolCall {
 /** Response update can be content, a status update, or tool results */
 export type ResponseUpdate =
   | { type: 'content'; content: string }
+  | { type: 'thinking'; thinkingContent: string }
   | { type: 'status'; status: ResponseStatus }
   | { type: 'tool_results'; toolCalls: ToolCallResult[] }
 import {
@@ -327,16 +328,17 @@ async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
  * Tool calls are emitted as __TOOL_CALLS__[...json...] at the end of stream.
  * Grounding metadata is emitted as __GROUNDING_METADATA__{...json...} at the end of stream.
  */
-function parseToolCallsFromStream(response: string): {
+export function parseToolCallsFromStream(response: string): {
   content: string
   toolCalls: ToolCall[]
   groundingMetadata?: GroundingMetadata
+  thinkingContent?: string
 } {
   let content = response
   let toolCalls: ToolCall[] = []
   let groundingMetadata: GroundingMetadata | undefined
 
-  // Extract grounding metadata (appears at end of stream from Google provider)
+  // Extract grounding metadata FIRST (appears at end of stream from Google provider)
   const groundingMarker = '__GROUNDING_METADATA__'
   const groundingIndex = content.indexOf(groundingMarker)
   if (groundingIndex !== -1) {
@@ -351,7 +353,7 @@ function parseToolCallsFromStream(response: string): {
     }
   }
 
-  // Extract tool calls
+  // Extract tool calls SECOND (appears at end of stream)
   const toolCallMarker = '__TOOL_CALLS__'
   const markerIndex = content.indexOf(toolCallMarker)
   if (markerIndex !== -1) {
@@ -364,7 +366,33 @@ function parseToolCallsFromStream(response: string): {
     }
   }
 
-  return { content, toolCalls, groundingMetadata }
+  // Extract thinking deltas LAST (emitted by providers during extended thinking)
+  // Done after tool/grounding extraction so thinking blocks don't accidentally
+  // consume those end-of-stream markers.
+  const thinkingMarker = '__THINKING_DELTA__'
+  let thinkingContent = ''
+  let thinkingIndex: number
+  while ((thinkingIndex = content.indexOf(thinkingMarker)) !== -1) {
+    // Find the end of this thinking block (next marker or end of content)
+    const afterMarker = thinkingIndex + thinkingMarker.length
+    const nextMarkerIndex = content.indexOf('\n__', afterMarker)
+    const blockEnd = nextMarkerIndex !== -1 ? nextMarkerIndex : undefined
+    const thinkingBlock = blockEnd
+      ? content.substring(afterMarker, blockEnd)
+      : content.substring(afterMarker)
+    thinkingContent += thinkingBlock
+    // Remove the marker and its content from the main content
+    content =
+      content.substring(0, thinkingIndex) +
+      (blockEnd !== undefined ? content.substring(blockEnd) : '')
+  }
+
+  return {
+    content: content.trim(),
+    toolCalls,
+    groundingMetadata,
+    thinkingContent: thinkingContent || undefined,
+  }
 }
 
 /**
@@ -578,14 +606,19 @@ export const submitChat = async (
     // Get the active LLM configuration
     const config = await CredentialService.getActiveConfig()
     if (!config) {
-      notifyError({
-        title: 'LLM Configuration Required',
-        description: t(
-          'No AI provider configured. Please configure one in Settings.',
-        ),
-        actionUrl: `${location.pathname}#settings/providers`,
-        actionLabel: 'Open Settings',
-      })
+      // Only show "not configured" if there's genuinely no credential
+      // (decryption failures already show their own notification in CredentialService)
+      const hasCredential = await CredentialService.getActiveCredential()
+      if (!hasCredential) {
+        notifyError({
+          title: 'LLM Configuration Required',
+          description: t(
+            'No AI provider configured. Please configure one in Settings.',
+          ),
+          actionUrl: `${location.pathname}#settings/providers`,
+          actionLabel: 'Open Settings',
+        })
+      }
       return { success: false, error: 'No AI provider configured' }
     }
 
@@ -1040,8 +1073,19 @@ ${connectorBlocks}`
         response += chunk
 
         // Only show content to user, not the tool call markers
-        const { content } = parseToolCallsFromStream(response)
-        onResponseUpdate({ type: 'content', content })
+        const { content, thinkingContent } = parseToolCallsFromStream(response)
+
+        // Only emit content update when there's actual content.
+        // During extended thinking, content is empty (thinking markers stripped)
+        // and we must NOT trigger completeLastStep in the UI yet.
+        if (content) {
+          onResponseUpdate({ type: 'content', content })
+        }
+
+        // Emit thinking content so the UI can show progress during extended thinking
+        if (thinkingContent) {
+          onResponseUpdate({ type: 'thinking', thinkingContent })
+        }
       }
 
       // Parse the final response for tool calls and grounding metadata
@@ -1202,11 +1246,23 @@ ${connectorBlocks}`
     }
 
     // Extract <think> content and persist on the Thinking step
+    // Combine both <think> blocks and __THINKING_DELTA__ content from streaming
+    let allThinkingContent = ''
     const thinkMatch = finalContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/)
     if (thinkMatch) {
+      allThinkingContent = thinkMatch[1].trim()
+    }
+    // Also include thinking from streaming deltas (e.g. Google Gemini reasoning_content)
+    const { thinkingContent: streamThinking } = parseToolCallsFromStream(response)
+    if (streamThinking) {
+      allThinkingContent = allThinkingContent
+        ? `${allThinkingContent}\n${streamThinking}`
+        : streamThinking
+    }
+    if (allThinkingContent) {
       const thinkingStep = messageSteps.find((s) => s.i18nKey === 'Thinking…')
       if (thinkingStep) {
-        thinkingStep.thinkingContent = thinkMatch[1].trim()
+        thinkingStep.thinkingContent = allThinkingContent
       }
     }
 

@@ -12,6 +12,7 @@ import {
   Virtualizer,
 } from '@heroui/react_3'
 import { Icon } from '@/components'
+import { useI18n } from '@/i18n'
 import type { ThreadTag } from '@/lib/yjs'
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch'
 import { useTagMention } from '../hooks/useTagMention'
@@ -19,11 +20,11 @@ import { TagMentionPopover } from './TagMentionPopover'
 
 /** Search filter presets — inserted/removed as `is:xxx` tokens in the search string */
 const SEARCH_FILTERS = [
-  { id: 'task', label: 'Tasks', icon: 'PcCheck' as const },
-  { id: 'chat', label: 'Chats', icon: 'ChatBubble' as const },
-  { id: 'starred', label: 'Starred', icon: 'Star' as const },
-  { id: 'unread', label: 'Unread', icon: 'Mail' as const },
-]
+  { id: 'task', labelKey: 'Tasks', icon: 'PcCheck' },
+  { id: 'chat', labelKey: 'Chats', icon: 'ChatBubble' },
+  { id: 'starred', labelKey: 'Starred', icon: 'Star' },
+  { id: 'unread', labelKey: 'Unread', icon: 'Mail' },
+] as const
 
 /** Extract active `is:xxx` tokens from a search string */
 function parseIsTokens(value: string): Set<string> {
@@ -176,6 +177,8 @@ export function CollectionView<T extends object>({
   const activeTokens = useMemo(() => parseIsTokens(inputValue), [inputValue])
   const hasActiveFilters = activeTokens.size > 0
 
+  const { t } = useI18n()
+
   const handleFilterToggle = useCallback(
     (token: string) => {
       const newValue = toggleIsToken(inputValue, token)
@@ -234,9 +237,9 @@ export function CollectionView<T extends object>({
               onAction={(key) => handleFilterToggle(key as string)}
             >
               {SEARCH_FILTERS.map((f) => (
-                <Dropdown.Item key={f.id} id={f.id} textValue={f.label}>
+                <Dropdown.Item key={f.id} id={f.id} textValue={t(f.labelKey)}>
                   <Icon name={f.icon} size="sm" />
-                  <Label>{f.label}</Label>
+                  <Label>{t(f.labelKey)}</Label>
                   <Dropdown.ItemIndicator type="dot" />
                 </Dropdown.Item>
               ))}

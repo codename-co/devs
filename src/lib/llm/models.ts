@@ -210,6 +210,13 @@ const LOCAL_MODEL_CAPABILITY_PATTERNS: LocalModelCapabilityPattern[] = [
   { pattern: /^codellama/i, capabilities: {} },
   { pattern: /^starcoder/i, capabilities: {} },
 
+  // Bonsai models — purpose-built for edge/browser, fast inference
+  { pattern: /^bonsai/i, capabilities: { fast: true, lowCost: true } },
+  { pattern: /^ternary-bonsai/i, capabilities: { fast: true, lowCost: true } },
+
+  // Liquid Foundation Models — SSM architecture, efficient inference
+  { pattern: /^lfm/i, capabilities: { fast: true, lowCost: true } },
+
   // Small/fast models
   { pattern: /^phi4-mini/i, capabilities: { fast: true, tools: true } },
   { pattern: /^phi-4-mini/i, capabilities: { fast: true, tools: true } },

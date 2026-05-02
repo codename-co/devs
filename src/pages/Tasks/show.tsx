@@ -60,6 +60,7 @@ import {
   createStepFromStatus,
   completeLastStep,
   addToolDataToStep,
+  updateStepThinkingContent,
 } from '../Agents/ConversationStepTracker'
 
 import {
@@ -596,6 +597,10 @@ export const TaskPage = () => {
             setResponse(update.content)
             setCurrentStatus(null)
             setConversationSteps((prev) => completeLastStep(prev))
+          } else if (update.type === 'thinking') {
+            setConversationSteps((prev) =>
+              updateStepThinkingContent(prev, update.thinkingContent),
+            )
           } else if (update.type === 'tool_results') {
             setConversationSteps((prev) =>
               addToolDataToStep(prev, update.toolCalls),

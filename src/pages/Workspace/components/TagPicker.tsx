@@ -5,6 +5,7 @@ import type { ThreadTag } from '@/lib/yjs'
 import {
   useThreadTagDefinitions,
   useThreadTagMap,
+  useThreadTagIds,
   addTagToThread,
   removeTagFromThread,
   findOrCreateTagForColor,
@@ -13,8 +14,8 @@ import {
 
 interface TagPickerProps {
   threadId: string
-  /** Current tag IDs on the thread */
-  threadTagIds: string[]
+  /** @deprecated Ignored — tags are now read reactively from Yjs */
+  threadTagIds?: string[]
 }
 
 /**
@@ -25,10 +26,11 @@ interface TagPickerProps {
  * Clicking the Label icon (or any active dot area) enters edit mode.
  * Clicking outside or pressing Escape exits edit mode.
  */
-export function TagPicker({ threadId, threadTagIds }: TagPickerProps) {
+export function TagPicker({ threadId }: TagPickerProps) {
   const allTags = useThreadTagDefinitions()
   const tagMap = useThreadTagMap()
-  const threadTagSet = useMemo(() => new Set(threadTagIds), [threadTagIds])
+  const liveTagIds = useThreadTagIds(threadId)
+  const threadTagSet = useMemo(() => new Set(liveTagIds), [liveTagIds])
   const [editing, setEditing] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -56,7 +58,7 @@ export function TagPicker({ threadId, threadTagIds }: TagPickerProps) {
 
   // Resolve active tags to their palette entries for display
   const activeDots = useMemo(() => {
-    return threadTagIds
+    return liveTagIds
       .map((id) => {
         const tag = tagMap.get(id)
         if (!tag) return null
@@ -64,7 +66,7 @@ export function TagPicker({ threadId, threadTagIds }: TagPickerProps) {
         return palette ? { ...palette, name: tag.name } : null
       })
       .filter(Boolean) as { color: ThreadTag['color']; defaultName: string; dotClass: string; name: string }[]
-  }, [threadTagIds, tagMap])
+  }, [liveTagIds, tagMap])
 
   // Expanded: full palette
   if (editing) {

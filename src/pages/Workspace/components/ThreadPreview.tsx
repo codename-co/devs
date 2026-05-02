@@ -307,7 +307,7 @@ export const ThreadPreview = memo(function ThreadPreview({
             )}
 
             {/* Tags — macOS-style inline color dots */}
-            <TagPicker threadId={thread.id} threadTagIds={thread.tags} />
+            <TagPicker threadId={thread.id} />
 
             {/* Participants — inline, pushed right */}
             {thread.participants.length > 1 && (
@@ -359,7 +359,7 @@ export const ThreadPreview = memo(function ThreadPreview({
               )}
 
               {/* Session-specific rendering with execution support */}
-              {thread.kind === 'session' ? (
+              {thread.source.session ? (
                 <SessionPreviewContent thread={thread} />
               ) : mode === 'custom' && renderCustomContent ? (
                 renderCustomContent(thread)

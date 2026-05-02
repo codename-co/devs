@@ -82,6 +82,7 @@ import {
   createStepFromStatus,
   completeLastStep,
   addToolDataToStep,
+  updateStepThinkingContent,
 } from './ConversationStepTracker'
 import localI18n from './i18n'
 
@@ -2040,6 +2041,11 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             setCurrentStatus(null)
             // Mark previous running step as completed when content arrives
             setConversationSteps((prev) => completeLastStep(prev))
+          } else if (update.type === 'thinking') {
+            // Update the Thinking step with streamed thinking content
+            setConversationSteps((prev) =>
+              updateStepThinkingContent(prev, update.thinkingContent),
+            )
           } else if (update.type === 'tool_results') {
             // Attach tool I/O data to the last running step
             setConversationSteps((prev) =>
@@ -2181,6 +2187,11 @@ Example output: ["Tell me more about that", "Can you give an example?", "How do 
             setCurrentStatus(null)
             // Mark previous running step as completed when content arrives
             setConversationSteps((prev) => completeLastStep(prev))
+          } else if (update.type === 'thinking') {
+            // Update the Thinking step with streamed thinking content
+            setConversationSteps((prev) =>
+              updateStepThinkingContent(prev, update.thinkingContent),
+            )
           } else if (update.type === 'tool_results') {
             // Attach tool I/O data to the last running step
             setConversationSteps((prev) =>

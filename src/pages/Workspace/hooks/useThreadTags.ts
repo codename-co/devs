@@ -5,6 +5,7 @@ import {
   conversations as conversationsMap,
   tasks as tasksMap,
   useLiveMap,
+  useLiveValue,
 } from '@/lib/yjs'
 import type { ThreadTag } from '@/lib/yjs'
 import { sessions as sessionsMap } from '@/lib/yjs'
@@ -176,4 +177,33 @@ export function getThreadTags(threadId: string): string[] {
   const entity = resolveThreadEntity(threadId)
   if (!entity) return []
   return entity.get()?.tags ?? []
+}
+
+// ---------------------------------------------------------------------------
+// Reactive Tag IDs Hook
+// ---------------------------------------------------------------------------
+
+/**
+ * Reactively read the tag IDs for a thread directly from Yjs.
+ *
+ * Resolves the thread to its backing entity (conversation, task, or
+ * session → linked conversation) and observes it via `useLiveValue`,
+ * so the component re-renders immediately when tags change — without
+ * waiting for the full thread-rebuild pipeline.
+ */
+export function useThreadTagIds(threadId: string): string[] {
+  const conv = useLiveValue(conversationsMap, threadId)
+  const task = useLiveValue(tasksMap, threadId)
+  const session = useLiveValue(sessionsMap, threadId)
+  const sessionConv = useLiveValue(
+    conversationsMap,
+    session?.conversationId,
+  )
+
+  return useMemo(() => {
+    if (conv) return conv.tags ?? []
+    if (task) return task.tags ?? []
+    if (sessionConv) return sessionConv.tags ?? []
+    return []
+  }, [conv, task, sessionConv])
 }

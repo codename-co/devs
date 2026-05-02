@@ -8,6 +8,7 @@ import {
 } from '../components'
 import { useV2Shell } from '../context'
 import type { ThreadFilter } from '../types'
+import { useI18n } from '@/i18n'
 
 /**
  * Agents browser view — agent collection list + agent detail preview.
@@ -40,6 +41,8 @@ export function AgentsPage() {
     openSettings,
     searchInputRef,
   } = useV2Shell()
+
+  const { t } = useI18n()
 
   const handleCreateAgent = useCallback(() => {
     selectItem('new')
@@ -116,9 +119,9 @@ export function AgentsPage() {
           search={search}
           onSearchChange={setSearch}
           customAgentIds={customAgentIds}
-          searchPlaceholder="Search agents…"
-          emptyLabel="No agents found"
-          noMatchLabel="No agents found"
+          searchPlaceholder={t('Search agents…')}
+          emptyLabel={t('No agents found')}
+          noMatchLabel={t('No agents found')}
           searchInputRef={searchInputRef}
           className={hasSelection ? 'hidden md:flex' : 'flex'}
         />

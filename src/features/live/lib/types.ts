@@ -85,7 +85,8 @@ export interface STTProvider {
 export type TTSProviderType =
   | 'web-speech' // Browser native SpeechSynthesis
   | 'kokoro' // onnx-community/Kokoro-82M-v1.0-ONNX (SOTA, 82MB)
-  | 'supertonic' // onnx-community/Supertonic-TTS-ONNX (~100MB)
+  | 'kitten' // onnx-community/kitten-tts-nano-0.1-ONNX (ultra-light, ~23MB)
+  | 'supertonic' // onnx-community/Supertonic-TTS-2-ONNX (multilingual, ~250MB)
   | 'gemini-live' // Gemini Live API (cloud, bidirectional)
 
 export interface TTSVoice {
@@ -361,12 +362,20 @@ export const TTS_MODELS = {
     voices: 54,
     description: 'Best quality TTS, 4-bit quantized for faster inference',
   },
+  kitten: {
+    modelId: 'onnx-community/kitten-tts-nano-0.1-ONNX',
+    size: '~23MB',
+    latency: '~100ms',
+    quality: 'Good',
+    voices: 6,
+    description: 'Ultra-lightweight TTS. Instant loading. English only.',
+  },
   supertonic: {
-    modelId: 'onnx-community/Supertonic-TTS-ONNX',
-    size: '~100MB',
+    modelId: 'onnx-community/Supertonic-TTS-2-ONNX',
+    size: '~250MB',
     latency: '~300ms',
     quality: 'High',
     voices: 10,
-    description: 'Good quality with style control',
+    description: 'Multilingual TTS. EN/KO/ES/PT/FR. Diffusion-based.',
   },
 } as const

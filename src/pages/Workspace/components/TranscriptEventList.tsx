@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Chip, ScrollShadow, Tooltip } from '@heroui/react_3'
 import { Icon } from '@/components'
+import { useI18n } from '@/i18n'
 import type { TranscriptEvent } from './TranscriptView'
 
 /**
@@ -32,14 +33,15 @@ function useNewEventIds(events: TranscriptEvent[]): Set<string> {
 
 // ── Role styling ──────────────────────────────────────────────────────
 
-const ROLE_CHIP: Record<
+const ROLE_CHIP_STYLE: Record<
   TranscriptEvent['role'],
-  { label: string; color: 'default' | 'warning' | 'accent' }
+  { i18nKey: string; color: 'default' | 'warning' | 'accent'; className?: string }
 > = {
-  user: { label: 'User', color: 'warning' },
-  tool: { label: 'Tool', color: 'default' },
-  agent: { label: 'Agent', color: 'accent' },
-  system: { label: 'System', color: 'default' },
+  user: { i18nKey: 'User', color: 'warning' },
+  tool: { i18nKey: 'Tool', color: 'default' },
+  agent: { i18nKey: 'Agent', color: 'accent' },
+  system: { i18nKey: 'System', color: 'default' },
+  loading: { i18nKey: 'Model', color: 'default', className: 'bg-secondary text-secondary-foreground' },
 }
 
 const ROLE_BAR_COLOR: Record<TranscriptEvent['role'], string> = {
@@ -47,6 +49,7 @@ const ROLE_BAR_COLOR: Record<TranscriptEvent['role'], string> = {
   tool: 'bg-default-400',
   agent: 'bg-primary-300',
   system: 'bg-default-300',
+  loading: 'bg-secondary',
 }
 
 // ── Formatting helpers ────────────────────────────────────────────────
@@ -93,6 +96,7 @@ const ProgressBar = memo(function ProgressBar({
   onSelectEvent: (id: string) => void
   newEventIds: Set<string>
 }) {
+  const { t } = useI18n()
   const totalDuration = Math.max(1, sessionEnd - sessionStart)
 
   // Minimum chip width as a percentage so point-in-time events (user prompts,
@@ -109,9 +113,10 @@ const ProgressBar = memo(function ProgressBar({
           ev.duration != null
             ? Math.max(MIN_CHIP_PCT, (ev.duration / totalDuration) * 100)
             : MIN_CHIP_PCT
-        const chip = ROLE_CHIP[ev.role]
+        const chipStyle = ROLE_CHIP_STYLE[ev.role]
         const isSelected = ev.id === selectedEventId
         const isNew = newEventIds.has(ev.id)
+        const isLoading = ev.role === 'loading' && ev.status === 'running'
 
         return (
           <Tooltip key={ev.id} delay={0} closeDelay={0}>
@@ -133,7 +138,7 @@ const ProgressBar = memo(function ProgressBar({
                   isSelected
                     ? 'ring-2 ring-primary-300'
                     : 'hover:ring-2 hover:ring-primary-100'
-                }`}
+                } ${isLoading ? 'animate-pulse' : ''}`}
               />
             </Tooltip.Trigger>
             <Tooltip.Content
@@ -143,10 +148,10 @@ const ProgressBar = memo(function ProgressBar({
               <Chip
                 size="sm"
                 variant="soft"
-                color={chip.color}
-                className="text-[10px]"
+                color={chipStyle.color}
+                className={`text-[10px] ${chipStyle.className ?? ''}`}
               >
-                {chip.label}
+                {t(chipStyle.i18nKey as any)}
               </Chip>
               <span className="text-xs font-medium">{ev.label}</span>
               {ev.duration != null && (
@@ -181,7 +186,8 @@ const EventRow = memo(function EventRow({
   isNew: boolean
   onSelect: () => void
 }) {
-  const chip = ROLE_CHIP[event.role]
+  const { t } = useI18n()
+  const chipStyle = ROLE_CHIP_STYLE[event.role]
 
   return (
     <button
@@ -200,16 +206,37 @@ const EventRow = memo(function EventRow({
       <Chip
         size="sm"
         variant="soft"
-        color={chip.color}
-        className="shrink-0 text-[10px] min-w-[44px] justify-center"
+        color={chipStyle.color}
+        className={`shrink-0 text-[10px] min-w-[44px] justify-center ${chipStyle.className ?? ''}`}
       >
-        {chip.label}
+        {t(chipStyle.i18nKey as any)}
       </Chip>
 
       {/* Label */}
       <span className="text-foreground flex-1 truncate text-xs font-medium">
         {event.label}
       </span>
+
+      {/* Loading progress */}
+      {event.role === 'loading' && (
+        <span className="text-muted shrink-0 text-[10px] tabular-nums flex items-center gap-1">
+          <Icon
+            name="Brain"
+            className={`inline h-3 w-3 align-[-2px] ${
+              event.status === 'running'
+                ? 'text-secondary-foreground animate-pulse'
+                : event.status === 'failed'
+                  ? 'text-danger'
+                  : 'text-secondary-foreground'
+            }`}
+          />
+          {event.status === 'running'
+            ? `${Math.round(event.progress ?? 0)}%`
+            : event.status === 'failed'
+              ? 'Failed'
+              : '✓'}
+        </span>
+      )}
 
       {/* Token info (prompt / completion) */}
       {event.tokenInfo && (
@@ -255,6 +282,7 @@ export const TranscriptEventList = memo(function TranscriptEventList({
   selectedEventId,
   onSelectEvent,
 }: TranscriptEventListProps) {
+  const { t } = useI18n()
   const newEventIds = useNewEventIds(events)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -272,7 +300,7 @@ export const TranscriptEventList = memo(function TranscriptEventList({
   if (events.length === 0) {
     return (
       <div className="text-muted flex items-center justify-center p-6 text-xs">
-        No events
+        {t('No events')}
       </div>
     )
   }

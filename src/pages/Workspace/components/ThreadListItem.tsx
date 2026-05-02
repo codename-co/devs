@@ -5,7 +5,7 @@ import {
   stripMarkdown,
   truncate,
 } from '../lib/thread-utils'
-import { useThreadTagMap } from '../hooks/useThreadTags'
+import { useThreadTagMap, useThreadTagIds } from '../hooks/useThreadTags'
 import type { Thread } from '../types'
 import { THREAD_KIND_META } from '../types'
 
@@ -20,6 +20,7 @@ export const ThreadListItem = memo(function ThreadListItem({
 }: ThreadListItemProps) {
   const agent = thread.agent
   const tagMap = useThreadTagMap()
+  const liveTagIds = useThreadTagIds(thread.id)
 
   return (
     <>
@@ -71,7 +72,7 @@ export const ThreadListItem = memo(function ThreadListItem({
           <span className="text-muted min-w-0 flex-1 truncate text-xs leading-tight">
             {truncate(stripMarkdown(thread.snippet), 80)}
           </span>
-          {thread.tags.slice(0, 3).map((tagId) => {
+          {liveTagIds.slice(0, 3).map((tagId) => {
             const tag = tagMap.get(tagId)
             if (!tag) return null
             const dotColor =

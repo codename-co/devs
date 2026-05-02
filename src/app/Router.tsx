@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
-
-import { LocalLLMLoadingIndicator } from '@/components'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
@@ -154,19 +152,9 @@ function Router() {
   return (
     <Routes>
       <Route path="/" element={<RootLayout />}>
-        {renderRoutes((el) => (
-          <>
-            {el}
-            <LocalLLMLoadingIndicator />
-          </>
-        ))}
+        {renderRoutes()}
         <Route path="spaces/:encodedSpaceId" element={<SpacePath />}>
-          {renderRoutes((el) => (
-            <>
-              {el}
-              <LocalLLMLoadingIndicator />
-            </>
-          ))}
+          {renderRoutes()}
         </Route>
         <Route path=":lang" element={<LanguagePath />}>
           {renderRoutes()}
@@ -219,7 +207,6 @@ const LanguagePath = () => {
   return (
     <I18nProvider lang={lang}>
       <Outlet />
-      <LocalLLMLoadingIndicator />
     </I18nProvider>
   )
 }

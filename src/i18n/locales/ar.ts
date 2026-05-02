@@ -18,6 +18,9 @@ export const ar: I18n = {
   'New Task': 'مهمة جديدة',
   'New Team': 'فريق جديد',
   Tasks: 'المهام',
+  Chats: 'المحادثات',
+  Starred: 'مميزة',
+  Unread: 'غير مقروءة',
   Teams: 'الفرق',
   Settings: 'الإعدادات',
   Agents: 'الوكلاء',
@@ -496,6 +499,19 @@ export const ar: I18n = {
 
   // Local LLM Loading Indicator
   'Initializing Local AI Model…': 'جارٍ تهيئة نموذج الذكاء الاصطناعي المحلي…',
+  'Downloading model': 'جارٍ تنزيل النموذج',
+  'Model loaded': 'تم تحميل النموذج',
+  'Model load failed': 'فشل تحميل النموذج',
+  'Initializing model': 'جارٍ تهيئة النموذج',
+
+  // Transcript / Frames view
+  'Model': 'نموذج',
+  'User': 'مستخدم',
+  'Tool': 'أداة',
+  'Tool use': 'استخدام الأداة',
+  'Tool result': 'نتيجة الأداة',
+  'No events': 'لا توجد أحداث',
+  'Select an event to view details': 'اختر حدثًا لعرض التفاصيل',
 
   // Agent Memory System
   'Agent Memory': 'ذاكرة الوكيل',

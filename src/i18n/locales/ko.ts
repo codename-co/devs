@@ -18,6 +18,9 @@ export const ko: I18n = {
   'New Task': '새로운 작업',
   'New Team': '새로운 팀',
   Tasks: '작업',
+  Chats: '채팅',
+  Starred: '즐겨찾기',
+  Unread: '읽지 않음',
   Teams: '팀',
   Settings: '설정',
   Agents: '에이전트',
@@ -495,6 +498,19 @@ export const ko: I18n = {
 
   // Local LLM Loading Indicator
   'Initializing Local AI Model…': '로컬 AI 모델 초기화 중…',
+  'Downloading model': '모델 다운로드 중',
+  'Model loaded': '모델 로드 완료',
+  'Model load failed': '모델 로드 실패',
+  'Initializing model': '모델 초기화 중',
+
+  // Transcript / Frames view
+  'Model': '모델',
+  'User': '사용자',
+  'Tool': '도구',
+  'Tool use': '도구 사용',
+  'Tool result': '도구 결과',
+  'No events': '이벤트 없음',
+  'Select an event to view details': '이벤트를 선택하여 세부 정보 보기',
 
   // Agent Memory System
   'Agent Memory': '에이전트 기억',

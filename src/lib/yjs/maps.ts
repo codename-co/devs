@@ -52,6 +52,7 @@ import type {
   Session,
   Space,
 } from '@/types'
+import type { ModelLoadEvent } from '@/stores/localLLMStore'
 import type { StudioEntry } from '@/features/studio/types'
 import type { Trace, Span, TracingConfig } from '@/features/traces/types'
 import type { Connector, ConnectorSyncState } from '@/features/connectors/types'
@@ -275,6 +276,9 @@ export const langfuseConfig = ydoc.getMap<LangfuseConfigEntry>('langfuseConfig')
  * Values are PNG data-URLs (640×480).
  */
 export const widgetCaptures = ydoc.getMap<string>('widgetCaptures')
+
+/** Model load events (local LLM init/download) — keyed by event id (timestamp-based). */
+export const modelLoadEvents = ydoc.getMap<ModelLoadEvent>('modelLoadEvents')
 
 /**
  * @deprecated Use {@link credentials} instead.  Alias kept for backward

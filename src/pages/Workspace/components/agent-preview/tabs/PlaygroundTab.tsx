@@ -28,6 +28,7 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [prompt, setPrompt] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -61,6 +62,7 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, userMsg])
+      setPrompt('')
       setIsStreaming(true)
       setStreamingContent('')
 
@@ -244,6 +246,8 @@ export function PlaygroundTab({ agent }: PlaygroundTabProps) {
           lang={lang}
           className="!max-w-full"
           placeholder={t('Send a message...')}
+          value={prompt}
+          onValueChange={setPrompt}
           isSending={isStreaming}
           onStop={handleStop}
           onSubmitToAgent={handleSubmit}

@@ -601,17 +601,13 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
 
     const handleSkillSelect = useCallback(
       (skill: InstalledSkill) => {
-        // Convert skill SKILL.md content to a File attachment
-        const content = skill.skillMdContent || skill.description
-        const blob = new Blob([content], { type: 'text/markdown' })
-        const file = new File([blob], `${skill.name}.skill.md`, {
-          type: 'text/markdown',
-        })
-        const newFiles = [...selectedFiles, file]
-        setSelectedFiles(newFiles)
-        onFilesChange?.(newFiles)
+        // Insert /<skill-name> mention into the prompt (same as useSkillMention)
+        const skillName = skill.name.replace(/\s+/g, '-')
+        const separator = prompt.length > 0 && !prompt.endsWith(' ') ? ' ' : ''
+        const newPrompt = `${prompt}${separator}/${skillName} `
+        handlePromptChange(newPrompt)
       },
-      [selectedFiles, onFilesChange],
+      [prompt, handlePromptChange],
     )
 
     const handleDragEnter = useCallback((event: React.DragEvent) => {
@@ -791,7 +787,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
       >
         {/* Mention chips — absolute-positioned above the prompt area */}
         {hasMentionChips && (
-          <div className="absolute z-0 -top-8 bottom-0 left-0 right-0 rounded-2xl flex gap-1 flex-wrap px-1 border-2 border-primary-200 !bg-primary-50 p-1 shadow-lg shadow-primary-200/50">
+          <div className="absolute z-0 -top-8 bottom-0 left-0 right-0 rounded-2xl flex gap-1 flex-wrap px-1 border-2 border-primary-200 !bg-primary-50 p-1 shadow-lg shadow-primary-200/50 max-h-24 overflow-y-auto">
             {resolvedAgentMentions.map((agent) => (
               <Chip
                 key={`agent-${agent.id}`}
@@ -1118,7 +1114,7 @@ export const PromptArea = forwardRef<HTMLTextAreaElement, PromptAreaProps>(
                     </Tooltip>
                   )}
 
-                  {selectedAgent?.id !== 'devs' &&
+                  {(selectedAgent?.id !== 'devs' || !onSubmitTask) &&
                     onSubmitToAgent &&
                     (props.isSending && props.onStop ? (
                       <Tooltip

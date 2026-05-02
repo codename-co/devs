@@ -1,5 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import { traces as tracesMap } from '@/lib/yjs'
+import { traces as tracesMap, modelLoadEvents as modelLoadEventsMap } from '@/lib/yjs'
+import { useLiveMap } from '@/lib/yjs'
+import { useI18n } from '@/i18n'
 import { truncate } from '../lib/thread-utils'
 import type { Thread, ThreadMessage as TMsg } from '../types'
 import { TranscriptEventList } from './TranscriptEventList'
@@ -9,7 +11,7 @@ import { TranscriptEventDetail } from './TranscriptEventDetail'
 
 export interface TranscriptEvent {
   id: string
-  role: 'user' | 'tool' | 'agent' | 'system'
+  role: 'user' | 'tool' | 'agent' | 'system' | 'loading'
   label: string
   timestamp: number
   duration?: number
@@ -19,11 +21,18 @@ export interface TranscriptEvent {
   toolResult?: string
   agentName?: string
   status?: 'running' | 'completed' | 'failed'
+  /** Model loading progress (0-100), present only for role === 'loading' */
+  progress?: number
+  /** Model identifier, present only for role === 'loading' */
+  modelName?: string
+  /** Model size in bytes, present only for role === 'loading' */
+  modelSize?: number
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-function toMs(d: Date | string): number {
+function toMs(d: Date | string | number): number {
+  if (typeof d === 'number') return d
   return typeof d === 'string' ? new Date(d).getTime() : d.getTime()
 }
 
@@ -108,10 +117,59 @@ export const TranscriptView = memo(function TranscriptView({
 }: TranscriptViewProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
-  const events = useMemo(
-    () => buildTranscriptEvents(thread.messages),
-    [thread.messages],
-  )
+  const { t } = useI18n()
+
+  // Reactively read persisted model load events from Yjs
+  const allLoadEvents = useLiveMap(modelLoadEventsMap)
+
+  const events = useMemo(() => {
+    const base = buildTranscriptEvents(thread.messages)
+
+    // Determine the session timeframe to find overlapping load events
+    const session = thread.source.session
+    if (session && allLoadEvents.length > 0) {
+      const sessionStart = toMs(session.createdAt)
+      const sessionEnd = session.completedAt
+        ? toMs(session.completedAt)
+        : Date.now()
+
+      for (const loadEvent of allLoadEvents) {
+        // Include load events whose timeframe overlaps with this session
+        const loadEnd = loadEvent.completedAt ?? Date.now()
+        if (loadEvent.startedAt <= sessionEnd && loadEnd >= sessionStart) {
+          const isRunning = !loadEvent.completedAt
+          const label =
+            loadEvent.status === 'downloading'
+              ? t('Downloading model')
+              : loadEvent.status === 'ready'
+                ? t('Model loaded')
+                : loadEvent.status === 'error'
+                  ? t('Model load failed')
+                  : t('Initializing model')
+
+          base.push({
+            id: `load-${loadEvent.id}`,
+            role: 'loading',
+            label,
+            timestamp: loadEvent.startedAt,
+            duration: loadEvent.completedAt
+              ? loadEvent.completedAt - loadEvent.startedAt
+              : undefined,
+            status: isRunning
+              ? 'running'
+              : loadEvent.status === 'error'
+                ? 'failed'
+                : 'completed',
+            progress: loadEvent.progress,
+            modelName: loadEvent.modelName,
+            modelSize: loadEvent.modelSize,
+          })
+        }
+      }
+    }
+
+    return base.sort((a, b) => a.timestamp - b.timestamp)
+  }, [thread.messages, thread.source.session, allLoadEvents, t])
 
   const selectedEvent = useMemo(
     () => events.find((e) => e.id === selectedEventId) ?? null,

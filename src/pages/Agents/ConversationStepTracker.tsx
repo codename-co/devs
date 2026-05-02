@@ -343,7 +343,7 @@ const RunningStepInline = memo(
           <PendingToolInfo toolCalls={step.pendingToolCalls} />
         )}
         {step.thinkingContent && (
-          <details className="mt-1 ml-6">
+          <details open className="mt-1 ml-6">
             <summary className="cursor-pointer text-xs text-default-400 select-none">
               {t('Thoughts')}
             </summary>

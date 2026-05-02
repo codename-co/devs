@@ -1,18 +1,21 @@
 import { memo } from 'react'
 import { Chip, ScrollShadow, Tooltip } from '@heroui/react_3'
+import { Progress } from '@heroui/react'
 import { Icon, MarkdownRenderer } from '@/components'
+import { useI18n } from '@/i18n'
 import type { TranscriptEvent } from './TranscriptView'
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-const ROLE_CHIP: Record<
+const ROLE_CHIP_STYLE: Record<
   TranscriptEvent['role'],
-  { label: string; color: 'default' | 'warning' | 'accent' }
+  { i18nKey: string; color: 'default' | 'warning' | 'accent'; className?: string }
 > = {
-  user: { label: 'User', color: 'default' },
-  tool: { label: 'Tool', color: 'warning' },
-  agent: { label: 'Agent', color: 'accent' },
-  system: { label: 'System', color: 'default' },
+  user: { i18nKey: 'User', color: 'default' },
+  tool: { i18nKey: 'Tool', color: 'warning' },
+  agent: { i18nKey: 'Agent', color: 'accent' },
+  system: { i18nKey: 'System', color: 'default' },
+  loading: { i18nKey: 'Model', color: 'default', className: 'bg-secondary text-secondary-foreground' },
 }
 
 function formatElapsed(ms: number, startMs: number): string {
@@ -25,6 +28,13 @@ function formatElapsed(ms: number, startMs: number): string {
 
 function formatDuration(ms: number): string {
   return ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(1)}s`
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
 }
 
 function formatValue(val: unknown): string {
@@ -53,15 +63,17 @@ export const TranscriptEventDetail = memo(function TranscriptEventDetail({
   sessionStart,
   onClose,
 }: TranscriptEventDetailProps) {
+  const { t } = useI18n()
+
   if (!event) {
     return (
       <div className="text-muted flex h-full items-center justify-center text-xs">
-        Select an event to view details
+        {t('Select an event to view details')}
       </div>
     )
   }
 
-  const chip = ROLE_CHIP[event.role]
+  const chipStyle = ROLE_CHIP_STYLE[event.role]
 
   return (
     <div className="flex h-full flex-col">
@@ -72,10 +84,10 @@ export const TranscriptEventDetail = memo(function TranscriptEventDetail({
             <Chip
               size="sm"
               variant="soft"
-              color={chip.color}
-              className="text-[10px]"
+              color={chipStyle.color}
+              className={`text-[10px] ${chipStyle.className ?? ''}`}
             >
-              {chip.label}
+              {t(chipStyle.i18nKey as any)}
             </Chip>
             <span className="text-foreground text-sm font-semibold">
               {event.label}
@@ -131,7 +143,7 @@ export const TranscriptEventDetail = memo(function TranscriptEventDetail({
             {event.toolUse && (
               <div className="flex flex-col gap-1.5">
                 <span className="text-muted text-xs font-medium uppercase tracking-wider">
-                  Tool use
+                  {t('Tool use')}
                 </span>
                 <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-xl bg-default-100 p-3 font-mono text-xs leading-relaxed text-foreground">
                   {JSON.stringify(event.toolUse.input, null, 2)}
@@ -141,7 +153,7 @@ export const TranscriptEventDetail = memo(function TranscriptEventDetail({
             {event.toolResult !== undefined && (
               <div className="flex flex-col gap-1.5">
                 <span className="text-muted text-xs font-medium uppercase tracking-wider">
-                  Tool result
+                  {t('Tool result')}
                 </span>
                 <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-xl bg-default-100 p-3 font-mono text-xs leading-relaxed text-foreground max-h-[400px] overflow-y-auto"></pre>
               </div>
@@ -160,6 +172,48 @@ export const TranscriptEventDetail = memo(function TranscriptEventDetail({
         {event.role === 'agent' && event.content && (
           <div className="text-foreground text-sm leading-relaxed">
             <MarkdownRenderer content={event.content} />
+          </div>
+        )}
+
+        {/* Loading event: Show model details and progress */}
+        {event.role === 'loading' && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <Icon
+                name="Brain"
+                className={`h-6 w-6 shrink-0 ${
+                  event.status === 'running'
+                    ? 'text-secondary-foreground animate-pulse'
+                    : event.status === 'failed'
+                      ? 'text-danger'
+                      : 'text-secondary-foreground'
+                }`}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-foreground text-sm font-medium">
+                  {event.label}
+                </p>
+                {event.modelName && (
+                  <p className="text-muted text-xs mt-0.5 font-mono">
+                    {event.modelName}
+                  </p>
+                )}
+                {event.modelSize != null && event.modelSize > 0 && (
+                  <p className="text-muted text-xs mt-0.5">
+                    {formatBytes(event.modelSize)}
+                  </p>
+                )}
+              </div>
+            </div>
+            {event.status === 'running' && (
+              <Progress
+                size="sm"
+                value={event.progress ?? 0}
+                color="secondary"
+                className="w-full"
+                aria-label={t('Initializing Local AI Model…')}
+              />
+            )}
           </div>
         )}
 

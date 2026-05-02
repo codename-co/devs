@@ -820,6 +820,11 @@ export class GoogleProvider implements LLMProviderInterface {
             const parsed = JSON.parse(data)
             const delta = parsed.choices[0]?.delta
 
+            // Handle thinking/reasoning delta (sent during extended thinking)
+            if (delta?.reasoning_content) {
+              yield `\n__THINKING_DELTA__${delta.reasoning_content}`
+            }
+
             // Handle content delta
             if (delta?.content) yield delta.content
 

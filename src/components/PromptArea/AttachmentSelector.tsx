@@ -300,7 +300,7 @@ export function AttachmentSelector({
         />
       )}
 
-      <div className="max-h-60 overflow-y-auto -mx-1 px-1">
+      <div className="max-h-60 overflow-y-auto overflow-x-hidden -mx-1 px-1">
         {filteredSkillItems.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
             <Icon name="Puzzle" size="lg" className="text-default-300" />
@@ -344,12 +344,13 @@ export function AttachmentSelector({
                   />
                 }
                 textValue={skill.name}
+                classNames={{ title: 'overflow-hidden' }}
               >
-                <div className="flex flex-col gap-0 min-w-0">
-                  <span className="text-sm font-medium truncate">
+                <div className="flex flex-col gap-0 min-w-0 max-w-full overflow-hidden">
+                  <span className="text-sm font-medium truncate block">
                     {skill.name}
                   </span>
-                  <span className="text-xs text-default-400 truncate">
+                  <span className="text-xs text-default-400 line-clamp-3 break-all">
                     {skill.description}
                   </span>
                 </div>
@@ -597,7 +598,7 @@ export function AttachmentSelector({
           <Icon name="Plus" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-1 w-64 bg-white dark:bg-default-50">
+      <PopoverContent className="p-1 w-64 max-w-64 overflow-hidden bg-white dark:bg-default-50">
         {panelView === 'main' && renderMainPanel()}
         {panelView === 'knowledge' && renderKnowledgeBrowser()}
         {panelView === 'skills' && renderSkillsBrowser()}

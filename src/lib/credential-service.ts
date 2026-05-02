@@ -1,5 +1,5 @@
 import { LLMConfig, Credential, LLMProvider } from '@/types'
-import { errorToast } from './toast'
+import { notifyError } from '@/features/notifications'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 
 /**
@@ -65,9 +65,13 @@ export class CredentialService {
           console.error(
             'Credential was encrypted on a different device with local key',
           )
-          errorToast(
-            'This provider was configured on another device and cannot be accessed here. To sync providers across devices, enable password-protected sync.',
-          )
+          notifyError({
+            title: 'Provider configured on another device',
+            description:
+              'This provider was configured on another device and cannot be accessed here. To sync providers across devices, enable password-protected sync.',
+            actionUrl: `${location.pathname}#settings/providers`,
+            actionLabel: 'Open Settings',
+          })
           return null
         }
       }
@@ -77,9 +81,13 @@ export class CredentialService {
           credentialId,
           credential: { ...credential, encryptedApiKey: '[REDACTED]' },
         })
-        errorToast(
-          'Missing encryption metadata for credential. Please reconfigure your AI provider.',
-        )
+        notifyError({
+          title: 'Missing encryption metadata',
+          description:
+            'The encryption metadata for this provider is missing. Please re-enter your API key in Settings.',
+          actionUrl: `${location.pathname}#settings/providers`,
+          actionLabel: 'Open Settings',
+        })
         return null
       }
 
@@ -100,13 +108,21 @@ export class CredentialService {
 
       // Check if this is likely a sync issue (credential from another device)
       if (credential.iv && !localStorage.getItem(`${credentialId}-iv`)) {
-        errorToast(
-          'This provider was configured on another device. Enable password-protected sync to share providers across devices.',
-        )
+        notifyError({
+          title: 'Provider from another device',
+          description:
+            'This provider was configured on another device. Enable password-protected sync to share providers across devices, or re-enter the API key here.',
+          actionUrl: `${location.pathname}#settings/providers`,
+          actionLabel: 'Open Settings',
+        })
       } else {
-        errorToast(
-          'Failed to decrypt API key. Your credential may be corrupted. Please reconfigure your AI provider in Settings.',
-        )
+        notifyError({
+          title: 'Failed to decrypt API key',
+          description:
+            'The encryption key may have changed (e.g. after a browser data reset). Please re-enter your API key in Settings.',
+          actionUrl: `${location.pathname}#settings/providers`,
+          actionLabel: 'Open Settings',
+        })
       }
       return null
     }

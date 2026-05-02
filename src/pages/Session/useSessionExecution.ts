@@ -10,6 +10,7 @@ import {
   createStepFromStatus,
   completeLastStep,
   addToolDataToStep,
+  updateStepThinkingContent,
 } from '@/pages/Agents/ConversationStepTracker'
 import type { Lang } from '@/i18n'
 
@@ -113,6 +114,10 @@ export function useSessionExecution(
               setResponse(update.content)
               // Mark previous running step as completed when content arrives
               setConversationSteps((prev) => completeLastStep(prev))
+            } else if (update.type === 'thinking') {
+              setConversationSteps((prev) =>
+                updateStepThinkingContent(prev, update.thinkingContent),
+              )
             } else if (update.type === 'tool_results') {
               // Attach tool I/O data to the last running step
               setConversationSteps((prev) =>
@@ -130,6 +135,7 @@ export function useSessionExecution(
             // No-op — prompt already consumed
           },
         })
+
 
         // For the devs orchestrator, link the main task to the session.
         const finalUpdates: Partial<Session> = {
@@ -213,6 +219,10 @@ export function useSessionExecution(
             if (update.type === 'content') {
               setResponse(update.content)
               setConversationSteps((prev) => completeLastStep(prev))
+            } else if (update.type === 'thinking') {
+              setConversationSteps((prev) =>
+                updateStepThinkingContent(prev, update.thinkingContent),
+              )
             } else if (update.type === 'tool_results') {
               setConversationSteps((prev) =>
                 addToolDataToStep(prev, update.toolCalls),

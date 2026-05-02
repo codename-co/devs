@@ -118,6 +118,7 @@ export {
   threadTags,
   spaces,
   spaceSettings,
+  modelLoadEvents,
 } from './maps'
 export type {
   Preferences,

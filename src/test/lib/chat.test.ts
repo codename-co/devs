@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildOrchestrationPrompt } from '@/lib/chat'
+import { buildOrchestrationPrompt, parseToolCallsFromStream } from '@/lib/chat'
 import type { Message } from '@/types'
 
 describe('buildOrchestrationPrompt', () => {
@@ -79,5 +79,82 @@ describe('buildOrchestrationPrompt', () => {
     // The prompt must appear exactly after "## Current Request\n"
     const afterMarker = result.split('## Current Request\n')[1]
     expect(afterMarker).toBe(prompt)
+  })
+})
+
+describe('parseToolCallsFromStream', () => {
+  it('returns plain content when no markers are present', () => {
+    const result = parseToolCallsFromStream('Hello world')
+    expect(result.content).toBe('Hello world')
+    expect(result.toolCalls).toEqual([])
+    expect(result.thinkingContent).toBeUndefined()
+    expect(result.groundingMetadata).toBeUndefined()
+  })
+
+  it('extracts thinking deltas from accumulated response', () => {
+    const response =
+      '\n__THINKING_DELTA__I need to\n__THINKING_DELTA__ analyze this'
+    const result = parseToolCallsFromStream(response)
+    expect(result.content).toBe('')
+    expect(result.thinkingContent).toBe('I need to analyze this')
+  })
+
+  it('separates thinking content from actual content', () => {
+    const response =
+      '\n__THINKING_DELTA__Let me think\n__THINKING_DELTA__ about this.Here is the answer.'
+    const result = parseToolCallsFromStream(response)
+    // The last thinking block runs to the end because there's no next \n__ marker
+    // So "Here is the answer." is part of the thinking block
+    expect(result.thinkingContent).toContain('Let me think')
+  })
+
+  it('extracts thinking when followed by actual content with marker boundary', () => {
+    // Simulate: thinking chunks, then content chunks (content doesn't have \n__ prefix)
+    const response =
+      '\n__THINKING_DELTA__Reasoning here.\nActual content follows'
+    const result = parseToolCallsFromStream(response)
+    expect(result.thinkingContent).toContain('Reasoning here.')
+  })
+
+  it('extracts tool calls marker', () => {
+    const toolCalls = [
+      {
+        id: 'call_1',
+        type: 'function',
+        function: { name: 'search', arguments: '{}' },
+      },
+    ]
+    const response = `Some content__TOOL_CALLS__${JSON.stringify(toolCalls)}`
+    const result = parseToolCallsFromStream(response)
+    expect(result.content).toBe('Some content')
+    expect(result.toolCalls).toHaveLength(1)
+    expect(result.toolCalls[0].function.name).toBe('search')
+  })
+
+  it('extracts grounding metadata marker', () => {
+    const metadata = {
+      isGrounded: true,
+      webResults: [{ title: 'Test', url: 'https://example.com', snippet: '' }],
+    }
+    const response = `Content here__GROUNDING_METADATA__${JSON.stringify(metadata)}`
+    const result = parseToolCallsFromStream(response)
+    expect(result.content).toBe('Content here')
+    expect(result.groundingMetadata?.isGrounded).toBe(true)
+  })
+
+  it('handles all marker types together', () => {
+    const toolCalls = [
+      {
+        id: 'call_1',
+        type: 'function',
+        function: { name: 'calc', arguments: '{}' },
+      },
+    ]
+    const response =
+      '\n__THINKING_DELTA__Hmm...The answer is 42__TOOL_CALLS__' +
+      JSON.stringify(toolCalls)
+    const result = parseToolCallsFromStream(response)
+    expect(result.thinkingContent).toContain('Hmm...')
+    expect(result.toolCalls).toHaveLength(1)
   })
 })

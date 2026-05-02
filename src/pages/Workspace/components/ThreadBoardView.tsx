@@ -15,6 +15,7 @@ import {
   stripMarkdown,
   truncate,
 } from '../lib/thread-utils'
+import { useThreadTagIds } from '../hooks/useThreadTags'
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch'
 import { useTagMention } from '../hooks/useTagMention'
 import { TagMentionPopover } from './TagMentionPopover'
@@ -283,6 +284,7 @@ const BoardCard = memo(function BoardCard({
 }) {
   const agent = thread.agent
   const snippet = truncate(stripMarkdown(thread.snippet), 100)
+  const liveTagIds = useThreadTagIds(thread.id)
 
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
@@ -325,9 +327,9 @@ const BoardCard = memo(function BoardCard({
 
         <Card.Footer className="pt-2">
           <div className="flex w-full flex-col gap-1.5">
-            {thread.tags.length > 0 && (
+            {liveTagIds.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {thread.tags.map((tagId) => {
+                {liveTagIds.map((tagId) => {
                   const tag = tagMap.get(tagId)
                   if (!tag) return null
                   return (

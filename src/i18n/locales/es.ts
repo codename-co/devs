@@ -18,6 +18,9 @@ export const es: I18n = {
   'New Task': 'Nueva tarea',
   'New Team': 'Nuevo equipo',
   Tasks: 'Tareas',
+  Chats: 'Chats',
+  Starred: 'Destacados',
+  Unread: 'No leídos',
   Teams: 'Equipos',
   Settings: 'Configuraciones',
   Agents: 'Agentes',
@@ -502,6 +505,19 @@ export const es: I18n = {
 
   // Local LLM Loading Indicator
   'Initializing Local AI Model…': 'Inicializando el modelo de IA local…',
+  'Downloading model': 'Descargando modelo',
+  'Model loaded': 'Modelo cargado',
+  'Model load failed': 'Error al cargar el modelo',
+  'Initializing model': 'Inicializando modelo',
+
+  // Transcript / Frames view
+  'Model': 'Modelo',
+  'User': 'Usuario',
+  'Tool': 'Herramienta',
+  'Tool use': 'Uso de herramienta',
+  'Tool result': 'Resultado de herramienta',
+  'No events': 'Sin eventos',
+  'Select an event to view details': 'Selecciona un evento para ver detalles',
 
   // Agent Memory System
   'Agent Memory': 'Memoria del agente',

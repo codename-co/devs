@@ -59,6 +59,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
   private static useWasmFallback = false
 
   // Default model, optimized for browser inference
+  // LFM2.5-350M: Liquid SSM architecture, 243MB q4f16, 9 languages
   public static readonly DEFAULT_MODEL =
     // 'onnx-community/Qwen3.5-0.8B-ONNX'
     // 'onnx-community/gemma-4-E2B-it-ONNX'
@@ -66,6 +67,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
   // isLowEndDevice()
   //   ? 'onnx-community/granite-4.0-350m-ONNX-web'
   //   : 'onnx-community/granite-4.0-micro-ONNX-web'
+  // 'onnx-community/LFM2.5-350M-ONNX'
 
   // Progress callback for model loading
   private static progressCallback:
@@ -74,6 +76,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
         loaded?: number
         total?: number
         progress?: number
+        modelName?: string
       }) => void)
     | null = null
 
@@ -86,6 +89,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
       loaded?: number
       total?: number
       progress?: number
+      modelName?: string
     }) => void,
   ) {
     this.progressCallback = callback
@@ -154,11 +158,26 @@ export class LocalLLMProvider implements LLMProviderInterface {
    */
   private static getDtypeForModel(
     modelName: string,
-  ): 'q4f16' | 'fp16' | 'fp32' {
+  ): 'q4' | 'q4f16' | 'q8' | 'fp16' | 'fp32' {
     const lower = modelName.toLowerCase()
 
     // ONNX-web models are pre-quantized for browser inference — always use q4f16
     if (lower.includes('onnx-web') || lower.includes('onnx_web')) {
+      return 'q4f16'
+    }
+
+    // Bonsai models — use q4 (smallest supported quant: 1067MB for 1.7B)
+    if (lower.includes('bonsai')) {
+      return 'q4'
+    }
+
+    // LFM2.5 (Liquid) — use q4f16 for smallest download (243MB)
+    if (lower.includes('lfm')) {
+      return 'q4f16'
+    }
+
+    // Gemma 270m — use q4f16 for smallest download (260MB)
+    if (lower.includes('gemma') && lower.includes('270m')) {
       return 'q4f16'
     }
 
@@ -182,6 +201,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
       LocalLLMProvider.progressCallback({
         status: 'loading',
         progress: 0,
+        modelName,
       })
     }
 
@@ -201,6 +221,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
             loaded: progress.loaded,
             total: progress.total,
             progress: progress.progress,
+            modelName,
           })
         },
       })
@@ -208,6 +229,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
       LocalLLMProvider.progressCallback?.({
         status: 'ready',
         progress: 100,
+        modelName,
       })
 
       return generator
@@ -487,6 +509,8 @@ export class LocalLLMProvider implements LLMProviderInterface {
                 modelId.toLowerCase().includes('phi') ||
                 modelId.toLowerCase().includes('granite') ||
                 modelId.toLowerCase().includes('gemma') ||
+                modelId.toLowerCase().includes('bonsai') ||
+                modelId.toLowerCase().includes('lfm') ||
                 modelId.toLowerCase().includes('gpt')))
           )
         })
@@ -513,9 +537,10 @@ export class LocalLLMProvider implements LLMProviderInterface {
       // Fallback to default models list
       return [
         LocalLLMProvider.DEFAULT_MODEL,
-        'onnx-community/Phi-3.5-mini-instruct-ONNX-web',
-        'onnx-community/Qwen3-0.6B-ONNX',
         'onnx-community/gemma-3-270m-it-ONNX',
+        'onnx-community/granite-4.0-350m-ONNX-web',
+        'onnx-community/Bonsai-1.7B-ONNX',
+        'onnx-community/Qwen3-0.6B-ONNX',
       ]
     }
   }

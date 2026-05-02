@@ -467,8 +467,10 @@ function V2Shell({
       // Resolve the thread for this reply
       const targetThread = selectedThreads.find((t) => t.id === targetThreadId) ?? activeThread
 
-      // Session threads use addTurn so useSessionExecution picks it up
-      if (targetThread?.kind === 'session' && targetThread.source.session) {
+      // Session-backed threads use addTurn so useSessionExecution picks it up.
+      // Check source.session rather than kind because sessions with intent
+      // 'task'/'chat'/'media' are mapped to those kinds, not 'session'.
+      if (targetThread?.source?.session) {
         const session = targetThread.source.session
         const agentId = session.primaryAgentId
         setReplyingForThread(targetThreadId, true)

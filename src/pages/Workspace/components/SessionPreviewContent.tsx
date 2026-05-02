@@ -1,5 +1,6 @@
 import { Chip, Spinner } from '@heroui/react_3'
 import { MessageBubble } from '@/components/chat'
+import { LocalLLMLoadingIndicator } from '@/components'
 import { SystemPromptDisclosure } from './SystemPromptDisclosure'
 import { useLiveValue } from '@/lib/yjs'
 import { sessions as sessionsMap } from '@/lib/yjs'
@@ -109,6 +110,9 @@ export function SessionPreviewContent({ thread }: SessionPreviewContentProps) {
           liveSteps={conversationSteps}
         />
       )}
+
+      {/* Local LLM loading indicator — inline in the thread */}
+      <LocalLLMLoadingIndicator />
 
       {/* Thinking indicator when no content yet */}
       {isSending && !response && (
