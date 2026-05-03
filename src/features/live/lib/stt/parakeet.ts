@@ -35,11 +35,13 @@ import {
   env,
   AutomaticSpeechRecognitionPipeline,
 } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 /**
  * Estimate available memory for model loading

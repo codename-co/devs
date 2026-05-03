@@ -3,6 +3,7 @@ import {
   TraceService,
   estimateTokenUsage,
 } from '@/features/traces/trace-service'
+import { assertProviderAllowed } from '@/lib/privacy'
 import {
   ToolDefinition,
   ToolChoice,
@@ -197,6 +198,9 @@ export class LLMService {
       sessionId?: string
     },
   ): Promise<LLMResponseWithTools> {
+    // Privacy mode guard — block untrusted providers
+    assertProviderAllowed(config.provider)
+
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
 
@@ -286,6 +290,9 @@ export class LLMService {
       tags?: string[]
     },
   ): AsyncIterableIterator<string> {
+    // Privacy mode guard — block untrusted providers
+    assertProviderAllowed(config.provider)
+
     const requestId = generateRequestId()
     progressTracker.startRequest(requestId)
 

@@ -34,11 +34,13 @@ import {
   env,
   AutomaticSpeechRecognitionPipeline,
 } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 /** Languages supported by Cohere Transcribe */
 const COHERE_SUPPORTED_LANGUAGES = new Set([

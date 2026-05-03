@@ -27,11 +27,13 @@ import {
   TextStreamer,
   env,
 } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 const MODEL_ID = 'onnx-community/granite-4.0-1b-speech-ONNX'
 const DEFAULT_PROMPT = 'Can you transcribe the speech into a written format?'

@@ -10,7 +10,7 @@
  *  - Global system instructions textarea
  */
 
-import { Textarea } from '@heroui/react'
+import { Input, Textarea } from '@heroui/react'
 import { useI18n } from '@/i18n'
 import { userSettings } from '@/stores/userStore'
 import { useHashHighlight } from '@/hooks/useHashHighlight'
@@ -95,6 +95,18 @@ export function FeaturesSection() {
     'yoloMode',
     _yoloMode,
     _setYoloMode as (v: boolean | undefined) => void,
+  )
+
+  const _huggingfaceBaseUrl = userSettings(
+    (state) => state.huggingfaceBaseUrl ?? '',
+  )
+  const _setHuggingfaceBaseUrl = userSettings(
+    (state) => state.setHuggingfaceBaseUrl,
+  )
+  const [huggingfaceBaseUrl, setHuggingfaceBaseUrl] = useSpaceScopedSetting(
+    'huggingfaceBaseUrl',
+    _huggingfaceBaseUrl,
+    _setHuggingfaceBaseUrl as (v: string | undefined) => void,
   )
 
   return (
@@ -245,6 +257,29 @@ export function FeaturesSection() {
               )}
             </p>
           </Switch>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-sm font-medium text-default-700 mb-3">
+          {t('Advanced')}
+        </h4>
+        <div
+          id="huggingface-base-url"
+          className={getHighlightClasses('huggingface-base-url')}
+        >
+          <Input
+            label={t('HuggingFace Host')}
+            placeholder="https://huggingface.co"
+            description={t(
+              'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.',
+            )}
+            value={huggingfaceBaseUrl}
+            onChange={(e) =>
+              setHuggingfaceBaseUrl(e.target.value || undefined)
+            }
+            className="max-w-lg"
+          />
         </div>
       </div>
     </div>

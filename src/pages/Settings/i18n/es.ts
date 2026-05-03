@@ -256,4 +256,8 @@ export const es: I18n = {
     'Eliminar permanentemente este espacio. Las conversaciones y datos se moverán al espacio predeterminado.',
   'Cancel': 'Cancelar',
   'Confirm Delete': 'Confirmar eliminación',
+  'Advanced': 'Avanzado',
+  'HuggingFace Host': 'Host de HuggingFace',
+  'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
+    'URL personalizada de espejo o proxy de HuggingFace para entornos empresariales (ej. JFrog Artifactory). Dejar vacío para usar los servidores oficiales.',
 } as const

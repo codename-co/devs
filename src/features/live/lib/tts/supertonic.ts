@@ -19,11 +19,13 @@ import type {
   TTSProviderType,
 } from '../types'
 import { pipeline, env } from '@huggingface/transformers'
+import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 /**
  * Language code mapping for Supertonic&apos;s XML-tag format.
@@ -240,7 +242,7 @@ export class SupertonicTTSProvider implements TTSProvider {
     const taggedText = `<${lang}>${text}</${lang}>`
 
     // Voice embeddings are loaded by URL
-    const speakerEmbeddings = `https://huggingface.co/${this.modelId}/resolve/main/voices/${voiceId}.bin`
+    const speakerEmbeddings = `${getHuggingFaceHost()}/${this.modelId}/resolve/main/voices/${voiceId}.bin`
 
     // Yield to event loop before synthesis
     await new Promise((resolve) => setTimeout(resolve, 0))

@@ -253,4 +253,8 @@ export const ko: I18n = {
     '이 스페이스를 영구적으로 삭제합니다. 대화 및 데이터는 기본 스페이스로 이동됩니다.',
   'Cancel': '취소',
   'Confirm Delete': '삭제 확인',
+  'Advanced': '고급',
+  'HuggingFace Host': 'HuggingFace 호스트',
+  'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
+    '기업 환경을 위한 사용자 정의 HuggingFace 미러 또는 프록시 URL (예: JFrog Artifactory). 공식 서버를 사용하려면 비워두세요.',
 } as const

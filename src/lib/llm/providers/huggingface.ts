@@ -1,9 +1,12 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
 import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
+import { getHuggingFaceRouterHost } from '@/lib/huggingface'
 
 export class HuggingFaceProvider implements LLMProviderInterface {
-  private baseUrl = 'https://router.huggingface.co/v1'
+  private get baseUrl() {
+    return `${getHuggingFaceRouterHost()}/v1`
+  }
 
   /**
    * Convert LLMMessage to OpenAI-compatible format

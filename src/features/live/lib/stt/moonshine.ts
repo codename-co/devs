@@ -10,11 +10,13 @@
 
 import type { STTProvider, STTResult, STTConfig, STTProviderType } from '../types'
 import { pipeline, env, AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 export class MoonshineSTTProvider implements STTProvider {
   readonly type: STTProviderType = 'moonshine'

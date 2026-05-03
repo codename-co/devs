@@ -21,11 +21,13 @@ import {
   AutoTokenizer,
   env,
 } from '@huggingface/transformers'
+import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 /**
  * Kitten TTS Nano voices
@@ -189,7 +191,7 @@ export class KittenTTSProvider implements TTSProvider {
       return this.voiceCache.get(voiceId)!
     }
 
-    const url = `https://huggingface.co/${this.modelId}/resolve/main/voices/${voiceId}.bin`
+    const url = `${getHuggingFaceHost()}/${this.modelId}/resolve/main/voices/${voiceId}.bin`
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error(`Failed to load voice "${voiceId}": ${response.status}`)

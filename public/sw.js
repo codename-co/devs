@@ -4,6 +4,10 @@ const CACHE_NAME = 'devs-new-v1' // Will be replaced at build time
 const API_CACHE_NAME = 'devs-new-cache-v1' // Will be replaced at build time
 const TRANSFORMERS_CACHE_NAME = 'transformers-cache' // Persistent cache for HuggingFace models
 
+// Privacy mode state — when enabled, blocks all non-local outgoing requests
+let privacyModeEnabled = false
+const PRIVACY_ALLOWED_HOSTS = ['localhost', '127.0.0.1', '::1', '0.0.0.0']
+
 // LLM progress tracking
 let activeRequests = new Map()
 let requestStats = {
@@ -425,6 +429,22 @@ self.addEventListener('message', async (event) => {
     self.skipWaiting()
   }
   // -------------------------------------------------------------------------
+  // Privacy Mode Messages
+  // -------------------------------------------------------------------------
+  else if (event.data.type === 'PRIVACY_MODE_UPDATE') {
+    privacyModeEnabled = !!event.data.enabled
+    console.log(
+      `[SW] 🔒 Privacy mode ${privacyModeEnabled ? 'ENABLED' : 'DISABLED'}`,
+    )
+    // Acknowledge
+    if (event.source) {
+      event.source.postMessage({
+        type: 'PRIVACY_MODE_UPDATED',
+        enabled: privacyModeEnabled,
+      })
+    }
+  }
+  // -------------------------------------------------------------------------
   // Background Task Messages
   // -------------------------------------------------------------------------
   else if (event.data.type === 'BACKGROUND_TASK_STARTED') {
@@ -470,6 +490,40 @@ self.addEventListener('fetch', (event) => {
 
   // Log ALL requests to see what's being intercepted
   console.debug(`[SW-FETCH] Request to: ${url.hostname}${url.pathname}`)
+
+  // ---- Privacy Mode Guard ----
+  // When privacy mode is enabled, block ALL non-local outgoing requests.
+  if (privacyModeEnabled) {
+    const hostname = url.hostname.toLowerCase()
+    const isSameOrigin = url.origin === self.location.origin
+    const isLocal =
+      isSameOrigin ||
+      PRIVACY_ALLOWED_HOSTS.includes(hostname) ||
+      hostname.endsWith('.local') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+
+    if (!isLocal) {
+      console.warn(
+        `[SW-PRIVACY] 🔒 Blocked outgoing request to ${url.hostname}${url.pathname} (privacy mode)`,
+      )
+      event.respondWith(
+        new Response(
+          JSON.stringify({
+            error: 'Privacy mode is enabled. Outgoing network requests are blocked.',
+            blocked: true,
+          }),
+          {
+            status: 403,
+            statusText: 'Blocked by Privacy Mode',
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+      )
+      return
+    }
+  }
 
   // Check if this is a HuggingFace model file request
   const isHuggingFaceModel =

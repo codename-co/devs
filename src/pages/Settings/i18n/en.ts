@@ -205,4 +205,7 @@ export const en = [
   'Permanently delete this space. Conversations and data will be moved to the default space.',
   'Cancel',
   'Confirm Delete',
+  'Advanced',
+  'HuggingFace Host',
+  'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.',
 ] as const

@@ -52,6 +52,10 @@ export interface SyncedSettings {
   thinkingModel?: ModelTierConfig
   // PPTX presentation theme ('auto' = inherit from color theme)
   pptxTheme?: string
+  // Custom HuggingFace proxy/mirror base URL (enterprise environments)
+  huggingfaceBaseUrl?: string
+  // Privacy mode — blocks all outgoing network requests, only local providers allowed
+  privacyMode?: boolean
 }
 
 /**
@@ -142,6 +146,7 @@ interface UserSettingsStore extends UserSettings {
   setBalancedModel: (config: ModelTierConfig | undefined) => void
   setThinkingModel: (config: ModelTierConfig | undefined) => void
   setPptxTheme: (pptxTheme: string | undefined) => void
+  setHuggingfaceBaseUrl: (url: string | undefined) => void
   setSyncedTheme: (theme: ThemeMode | undefined) => void
   setSyncedColorTheme: (colorTheme: string | undefined) => void
 
@@ -245,6 +250,10 @@ export const userSettings = create<UserSettingsStore>()(
         setSyncedSetting('pptxTheme', pptxTheme)
         set({ pptxTheme })
       },
+      setHuggingfaceBaseUrl: (url: string | undefined) => {
+        setSyncedSetting('huggingfaceBaseUrl', url)
+        set({ huggingfaceBaseUrl: url })
+      },
       setSyncedTheme: (theme: ThemeMode | undefined) => {
         setSyncedSetting('theme', theme)
       },
@@ -330,6 +339,7 @@ export const userSettings = create<UserSettingsStore>()(
         balancedModel: state.balancedModel,
         thinkingModel: state.thinkingModel,
         pptxTheme: state.pptxTheme,
+        huggingfaceBaseUrl: state.huggingfaceBaseUrl,
       }),
     },
   ),

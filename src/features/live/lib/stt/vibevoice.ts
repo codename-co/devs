@@ -33,11 +33,13 @@ import {
   TextStreamer,
   env,
 } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 // ONNX-converted model from onnx-community (when available)
 // Falls back to the original HF model ID for future ONNX conversion

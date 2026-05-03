@@ -25,11 +25,13 @@ import {
   env,
   AutomaticSpeechRecognitionPipeline,
 } from '@huggingface/transformers'
+import { configureTransformersHost } from '@/lib/huggingface'
 
 // Configure transformers.js
 env.allowLocalModels = false
 env.allowRemoteModels = true
 env.useBrowserCache = true
+configureTransformersHost()
 
 // Fallback model chain - from largest/best to smallest/fastest
 // Note: whisper-large-v3-turbo requires ~6GB+ for the encoder alone (2.4GB file)

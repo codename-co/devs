@@ -23,6 +23,7 @@ import {
 import { TraceService } from '@/features/traces/trace-service'
 import { CostEstimate } from '@/features/traces/types'
 import { getVertexAIAuthInfo } from '@/lib/llm/vertex-ai-auth'
+import { getHuggingFaceHost, getHuggingFaceRouterHost } from '@/lib/huggingface'
 
 // =============================================================================
 // Image Generation Pricing (USD per image)
@@ -1139,7 +1140,9 @@ class GoogleImageProvider implements ImageProviderInterface {
  * Response: raw image bytes
  */
 class HuggingFaceImageProvider implements ImageProviderInterface {
-  private baseUrl = 'https://router.huggingface.co/hf-inference/models'
+  private get baseUrl() {
+    return `${getHuggingFaceRouterHost()}/hf-inference/models`
+  }
 
   async generate(
     prompt: string,
@@ -1253,7 +1256,7 @@ class HuggingFaceImageProvider implements ImageProviderInterface {
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      const response = await fetch('https://huggingface.co/api/whoami-v2', {
+      const response = await fetch(`${getHuggingFaceHost()}/api/whoami-v2`, {
         headers: { Authorization: `Bearer ${apiKey}` },
       })
       return response.ok

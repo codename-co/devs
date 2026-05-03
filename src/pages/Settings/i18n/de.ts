@@ -259,4 +259,8 @@ export const de: I18n = {
     'Diesen Bereich endgültig löschen. Gespräche und Daten werden in den Standardbereich verschoben.',
   'Cancel': 'Abbrechen',
   'Confirm Delete': 'Löschen bestätigen',
+  'Advanced': 'Erweitert',
+  'HuggingFace Host': 'HuggingFace-Host',
+  'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
+    'Benutzerdefinierte HuggingFace-Mirror- oder Proxy-URL für Unternehmensumgebungen (z.B. JFrog Artifactory). Leer lassen, um die offiziellen Server zu verwenden.',
 } as const

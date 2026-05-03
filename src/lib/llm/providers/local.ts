@@ -6,6 +6,7 @@ import {
   TextGenerationPipeline,
   TextStreamer,
 } from '@huggingface/transformers'
+import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
 import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
 
@@ -18,6 +19,7 @@ env.allowRemoteModels = true
 // Large files will use browser's HTTP disk cache
 env.useBrowserCache = true
 env.useFSCache = false // Disable FS cache (not applicable in browser)
+configureTransformersHost()
 
 // Configure WASM backend
 if (env.backends.onnx?.wasm) {
@@ -482,7 +484,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     try {
       // Fetch models from HuggingFace API filtered by onnx-community and transformers.js
       const response = await fetch(
-        'https://huggingface.co/api/models?author=onnx-community&library=transformers.js&limit=1000',
+        `${getHuggingFaceHost()}/api/models?author=onnx-community&library=transformers.js&limit=1000`,
       )
 
       if (!response.ok) {

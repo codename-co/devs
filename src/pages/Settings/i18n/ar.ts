@@ -252,4 +252,8 @@ export const ar: I18n = {
     'حذف هذه المساحة نهائيًا. سيتم نقل المحادثات والبيانات إلى المساحة الافتراضية.',
   'Cancel': 'إلغاء',
   'Confirm Delete': 'تأكيد الحذف',
+  'Advanced': 'متقدم',
+  'HuggingFace Host': 'مضيف HuggingFace',
+  'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
+    'عنوان URL مخصص لمرآة أو وكيل HuggingFace لبيئات المؤسسات (مثل JFrog Artifactory). اتركه فارغًا لاستخدام الخوادم الرسمية.',
 } as const
