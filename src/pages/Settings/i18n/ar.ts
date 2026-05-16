@@ -256,4 +256,16 @@ export const ar: I18n = {
   'HuggingFace Host': 'مضيف HuggingFace',
   'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
     'عنوان URL مخصص لمرآة أو وكيل HuggingFace لبيئات المؤسسات (مثل JFrog Artifactory). اتركه فارغًا لاستخدام الخوادم الرسمية.',
+  'Privacy Mode': 'وضع الخصوصية',
+  'Full Privacy Mode': 'وضع الخصوصية الكامل',
+  'When enabled, absolutely no outgoing network calls are allowed. Only local LLM providers (Local, Ollama, LM Studio) are trusted. Data never leaves your device.':
+    'عند التفعيل، لا يُسمح بأي اتصالات شبكة صادرة على الإطلاق. فقط مزودو LLM المحليون (Local، Ollama، LM Studio) موثوقون. لا تغادر البيانات جهازك أبدًا.',
+  'Toggle Privacy Mode': 'تبديل وضع الخصوصية',
+  'Privacy mode is active': 'وضع الخصوصية مفعّل',
+  'All outgoing network requests are blocked': 'جميع طلبات الشبكة الصادرة محظورة',
+  'Only local/on-device LLM providers are available': 'فقط مزودو LLM المحليون متاحون',
+  'Cloud providers (OpenAI, Anthropic, etc.) are disabled': 'مزودو السحابة (OpenAI، Anthropic، إلخ) معطلون',
+  'Workspace border indicates privacy mode': 'حدود مساحة العمل تشير إلى وضع الخصوصية',
+  'Blocked': 'محظور',
+  'Trusted': 'موثوق',
 } as const

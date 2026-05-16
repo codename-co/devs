@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import * as SyncModule from '@/features/sync'
 import { useAutoBackup, tryReconnectLocalBackup } from '@/features/local-backup'
 import { ServiceWorkerManager } from '@/lib/service-worker'
+import { installPrivacyFetchGuard } from '@/lib/privacy-fetch-guard'
 import { whenReady, migrateFromIndexedDB } from '@/lib/yjs'
 import { SecureStorage } from '@/lib/crypto'
 import { loadModelRegistry } from '@/lib/llm/models'
@@ -14,7 +15,11 @@ import {
   contrastForegroundHsl,
   generatePrimaryScale,
 } from '@/lib/themes'
-import { userSettings, useEffectiveTheme } from '@/stores/userStore'
+import {
+  userSettings,
+  useEffectiveTheme,
+  useEffectiveSettings,
+} from '@/stores/userStore'
 import { useLLMModelStore } from '@/stores/llmModelStore'
 import { useSyncStore } from '@/features/sync'
 import { SyncPasswordModal } from '@/features/sync/components/SyncPasswordModal'
@@ -105,6 +110,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
         // Register service worker
         await ServiceWorkerManager.register()
 
+        // Install privacy-mode fetch guard (defense-in-depth)
+        installPrivacyFetchGuard()
+
         // Note: Artifacts and other data load automatically via reactive hooks
         // No manual loading required - data syncs from Yjs to components instantly
 
@@ -184,6 +192,14 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
 
   // Auto-backup: automatically sync to local folder when data changes
   useAutoBackup()
+
+  // Privacy mode: sync state to service worker
+  const effectiveSettings = useEffectiveSettings()
+  const isPrivacy = effectiveSettings.privacyMode === true
+
+  useEffect(() => {
+    ServiceWorkerManager.setPrivacyMode(isPrivacy)
+  }, [isPrivacy])
 
   return (
     <>

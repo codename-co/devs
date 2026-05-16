@@ -7,7 +7,7 @@ import {
   ALL_SPACES_URL_SEGMENT,
   DEFAULT_SPACE_ID,
 } from '@/types'
-import { userSettings } from '@/stores/userStore'
+import { userSettings, useEffectiveSettings } from '@/stores/userStore'
 import {
   useSpaces,
   useActiveSpaceId,
@@ -161,6 +161,7 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
   const [newName, setNewName] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const navigateToSpace = useSpaceNavigate()
+  const { privacyMode } = useEffectiveSettings()
 
   useEffect(() => {
     if (isCreating) {
@@ -264,13 +265,21 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
       >
         <Tooltip delay={0}>
           <Select.Trigger
-            className="hover:bg-default/40 inline-flex h-8 w-8 items-center justify-center rounded-lg outline-none"
+            className="hover:bg-default/40 inline-flex h-8 w-8 items-center justify-center rounded-lg outline-none relative"
             aria-label={activeSpace?.name ?? 'Space'}
           >
             <Icon name={collapsedIcon} className="text-muted" size="sm" />
+            {privacyMode && (
+              <Icon
+                name="ShieldCheck"
+                className="absolute -top-1 -right-1 text-green-500 drop-shadow-sm"
+                style={{ width: 12, height: 12 }}
+              />
+            )}
           </Select.Trigger>
           <Tooltip.Content placement="right">
             {activeSpace?.name ?? 'Space'}
+            {privacyMode && ` 🛡️`}
           </Tooltip.Content>
         </Tooltip>
         {spaceOptions}
@@ -288,6 +297,13 @@ function SpaceSwitcher({ isCollapsed }: { isCollapsed?: boolean }) {
       >
         <Select.Trigger>
           <Select.Value className="flex items-center gap-2" />
+          {privacyMode && (
+            <Icon
+              name="ShieldCheck"
+              className="text-green-500 shrink-0"
+              size="sm"
+            />
+          )}
           <Select.Indicator>
             <Icon
               name="ArrowSeparateVertical"

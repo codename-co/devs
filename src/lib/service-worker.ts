@@ -84,4 +84,22 @@ export class ServiceWorkerManager {
       options,
     })
   }
+
+  /**
+   * Notify the service worker about privacy mode changes.
+   * When enabled, the SW will block all non-local outgoing requests.
+   */
+  static async setPrivacyMode(enabled: boolean): Promise<void> {
+    if (!this.registration?.active) {
+      console.warn('[SW-MANAGER] Service worker not active, cannot set privacy mode')
+      return
+    }
+
+    this.registration.active.postMessage({
+      type: 'PRIVACY_MODE_UPDATE',
+      enabled,
+    })
+
+    console.log(`[SW-MANAGER] 🔒 Privacy mode ${enabled ? 'enabled' : 'disabled'}`)
+  }
 }

@@ -257,4 +257,16 @@ export const ko: I18n = {
   'HuggingFace Host': 'HuggingFace 호스트',
   'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
     '기업 환경을 위한 사용자 정의 HuggingFace 미러 또는 프록시 URL (예: JFrog Artifactory). 공식 서버를 사용하려면 비워두세요.',
+  'Privacy Mode': '개인정보 보호 모드',
+  'Full Privacy Mode': '완전 개인정보 보호 모드',
+  'When enabled, absolutely no outgoing network calls are allowed. Only local LLM providers (Local, Ollama, LM Studio) are trusted. Data never leaves your device.':
+    '활성화되면 발신 네트워크 호출이 전혀 허용되지 않습니다. 로컬 LLM 공급자(Local, Ollama, LM Studio)만 신뢰됩니다. 데이터는 절대 기기를 떠나지 않습니다.',
+  'Toggle Privacy Mode': '개인정보 보호 모드 전환',
+  'Privacy mode is active': '개인정보 보호 모드가 활성화되었습니다',
+  'All outgoing network requests are blocked': '모든 발신 네트워크 요청이 차단됩니다',
+  'Only local/on-device LLM providers are available': '로컬/디바이스 LLM 공급자만 사용 가능합니다',
+  'Cloud providers (OpenAI, Anthropic, etc.) are disabled': '클라우드 공급자(OpenAI, Anthropic 등)가 비활성화됩니다',
+  'Workspace border indicates privacy mode': '작업 공간 테두리가 개인정보 보호 모드를 나타냅니다',
+  'Blocked': '차단됨',
+  'Trusted': '신뢰됨',
 } as const

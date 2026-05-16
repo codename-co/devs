@@ -260,4 +260,16 @@ export const es: I18n = {
   'HuggingFace Host': 'Host de HuggingFace',
   'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
     'URL personalizada de espejo o proxy de HuggingFace para entornos empresariales (ej. JFrog Artifactory). Dejar vacío para usar los servidores oficiales.',
+  'Privacy Mode': 'Modo privacidad',
+  'Full Privacy Mode': 'Modo privacidad total',
+  'When enabled, absolutely no outgoing network calls are allowed. Only local LLM providers (Local, Ollama, LM Studio) are trusted. Data never leaves your device.':
+    'Cuando está activado, no se permiten llamadas de red salientes. Solo los proveedores LLM locales (Local, Ollama, LM Studio) son de confianza. Los datos nunca salen de su dispositivo.',
+  'Toggle Privacy Mode': 'Alternar modo privacidad',
+  'Privacy mode is active': 'El modo privacidad está activo',
+  'All outgoing network requests are blocked': 'Todas las solicitudes de red salientes están bloqueadas',
+  'Only local/on-device LLM providers are available': 'Solo los proveedores LLM locales están disponibles',
+  'Cloud providers (OpenAI, Anthropic, etc.) are disabled': 'Los proveedores en la nube (OpenAI, Anthropic, etc.) están deshabilitados',
+  'Workspace border indicates privacy mode': 'El borde del espacio de trabajo indica el modo privacidad',
+  'Blocked': 'Bloqueado',
+  'Trusted': 'De confianza',
 } as const

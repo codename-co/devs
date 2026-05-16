@@ -22,6 +22,7 @@ import { formatBytes } from '@/lib/format'
 import { errorToast, successToast } from '@/lib/toast'
 import localI18n from '../i18n'
 import { PROVIDERS } from '../providers'
+import { usePrivacyMode } from '@/hooks/usePrivacyMode'
 
 export function ProvidersList() {
   const { lang, t } = useI18n(localI18n)
@@ -32,6 +33,8 @@ export function ProvidersList() {
   const credentials = useLLMModelStore((state) => state.credentials)
   const loadCredentials = useLLMModelStore((state) => state.loadCredentials)
   const deleteCredential = useLLMModelStore((state) => state.deleteCredential)
+  const { isActive: isPrivacyMode, isCredentialTrusted: checkCredentialTrust } =
+    usePrivacyMode()
 
   const [cacheInfo, setCacheInfo] = useState<CacheInfo | null>(null)
   const [isClearingCache, setIsClearingCache] = useState(false)
@@ -90,11 +93,14 @@ export function ProvidersList() {
   }) => {
     const provider = findProvider(credential.provider)
     const isDefault = false // index === 0
+    const isTrusted = checkCredentialTrust(credential)
 
     return (
       <Card
         className={`flex flex-row justify-between p-4 ${
-          /* isDefault ? 'ring-2 ring-primary ring-opacity-50' : */ ''
+          isPrivacyMode && !isTrusted
+            ? 'opacity-50 border-danger/30'
+            : ''
         }`}
       >
         <div className="flex items-center gap-4 px-2">
@@ -105,6 +111,16 @@ export function ProvidersList() {
               {isDefault && (
                 <Chip size="sm" color="primary" variant="flat">
                   {t('Default Provider')}
+                </Chip>
+              )}
+              {isPrivacyMode && !isTrusted && (
+                <Chip size="sm" color="danger" variant="flat">
+                  {t('Blocked')}
+                </Chip>
+              )}
+              {isPrivacyMode && isTrusted && (
+                <Chip size="sm" color="success" variant="flat">
+                  {t('Trusted')}
                 </Chip>
               )}
             </div>

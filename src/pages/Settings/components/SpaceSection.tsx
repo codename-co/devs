@@ -16,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   ScrollShadow,
+  Switch,
   Textarea,
   Tooltip,
 } from '@heroui/react'
@@ -114,6 +115,13 @@ export function SpaceSection() {
       _globalSystemInstructions,
       _setGlobalSystemInstructions as (v: string | undefined) => void,
     )
+
+  // Privacy mode — space-scopable
+  const [privacyMode, setPrivacyMode] = useSpaceScopedSetting(
+    'privacyMode',
+    false,
+    () => {}, // no global setter — privacy mode is always per-space
+  )
 
   // Filter icons based on search
   const filteredIcons = useMemo(() => {
@@ -294,6 +302,50 @@ export function SpaceSection() {
             minRows={3}
             maxRows={10}
           />
+        </div>
+      </div>
+
+      {/* Privacy Mode */}
+      <div>
+        <h4 className="text-sm font-medium text-default-700 mb-3">
+          {t('Privacy Mode')}
+        </h4>
+        <div
+          id="space-privacy-mode"
+          className={getHighlightClasses('space-privacy-mode', 'border border-default-200 rounded-lg p-4')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-medium">{t('Full Privacy Mode')}</p>
+              <p className="text-xs text-default-500 mt-1">
+                {t(
+                  'When enabled, absolutely no outgoing network calls are allowed. Only local LLM providers (Local, Ollama, LM Studio) are trusted. Data never leaves your device.',
+                )}
+              </p>
+            </div>
+            <Switch
+              isSelected={!!privacyMode}
+              onValueChange={(checked) => setPrivacyMode(checked || undefined)}
+              color="secondary"
+              aria-label={t('Toggle Privacy Mode')}
+            />
+          </div>
+          {privacyMode && (
+            <div className="mt-3 p-3 bg-secondary-50 dark:bg-secondary-950 rounded-md border border-secondary-200 dark:border-secondary-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon name="Shield" className="w-4 h-4 text-secondary-600" />
+                <span className="text-xs font-medium text-secondary-700 dark:text-secondary-300">
+                  {t('Privacy mode is active')}
+                </span>
+              </div>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1 ml-6 list-disc">
+                <li>{t('All outgoing network requests are blocked')}</li>
+                <li>{t('Only local/on-device LLM providers are available')}</li>
+                <li>{t('Cloud providers (OpenAI, Anthropic, etc.) are disabled')}</li>
+                <li>{t('Workspace border indicates privacy mode')}</li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 

@@ -514,13 +514,14 @@ export const fr: I18n = {
   'Initializing model': 'Initialisation du modèle',
 
   // Transcript / Frames view
-  'Model': 'Modèle',
-  'User': 'Utilisateur',
-  'Tool': 'Outil',
-  'Tool use': 'Utilisation d&apos;outil',
-  'Tool result': 'Résultat d&apos;outil',
+  Model: 'Modèle',
+  User: 'Utilisateur',
+  Tool: 'Outil',
+  'Tool use': 'Utilisation d’outil',
+  'Tool result': 'Résultat d’outil',
   'No events': 'Aucun événement',
-  'Select an event to view details': 'Sélectionner un événement pour voir les détails',
+  'Select an event to view details':
+    'Sélectionner un événement pour voir les détails',
 
   // Agent Memory System
   'Agent Memory': 'Mémoire Agent',

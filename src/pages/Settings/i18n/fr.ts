@@ -225,19 +225,19 @@ export const fr: I18n = {
   'Reset to default': 'Réinitialiser par défaut',
   'Sign in with GitHub': 'Se connecter avec GitHub',
   'Sign in with your GitHub account to use Copilot models from OpenAI, Anthropic, and Google.':
-    'Connectez-vous avec votre compte GitHub pour utiliser les modèles Copilot d&apos;OpenAI, Anthropic et Google.',
+    'Connectez-vous avec votre compte GitHub pour utiliser les modèles Copilot d’OpenAI, Anthropic et Google.',
   'Connecting to GitHub...': 'Connexion à GitHub...',
   'Enter this code on GitHub:': 'Entrez ce code sur GitHub :',
-  'Waiting for authorization...': 'En attente d&apos;autorisation...',
+  'Waiting for authorization...': 'En attente d’autorisation...',
   'A browser tab has been opened. If not,': 'Un onglet a été ouvert. Sinon,',
   'click here': 'cliquez ici',
   'Successfully authenticated!': 'Authentification réussie !',
-  'Authentication failed': 'Échec de l&apos;authentification',
+  'Authentication failed': 'Échec de l’authentification',
   'Try again': 'Réessayer',
   'Requires an active GitHub Copilot subscription.':
     'Nécessite un abonnement GitHub Copilot actif.',
   'GitHub OAuth is not configured. Set VITE_GITHUB_CLIENT_ID environment variable.':
-    'GitHub OAuth n&apos;est pas configuré. Définissez la variable d&apos;environnement VITE_GITHUB_CLIENT_ID.',
+    'GitHub OAuth n’est pas configuré. Définissez la variable d’environnement VITE_GITHUB_CLIENT_ID.',
   'Paste a token from': 'Collez un jeton depuis',
   'or a': 'ou un',
   'fine-grained PAT': 'PAT à granularité fine',
@@ -249,17 +249,33 @@ export const fr: I18n = {
   'Search icons…': 'Rechercher des icônes…',
   'No icons found': 'Aucune icône trouvée',
   'Reset to Default': 'Réinitialiser',
-  'Instructions': 'Instructions',
+  Instructions: 'Instructions',
   "These instructions will be prepended to every agent's instructions in this space":
     'Ces instructions seront ajoutées au début des instructions de chaque agent dans cet espace',
   'Danger Zone': 'Zone de danger',
   'Delete Space': 'Supprimer l’espace',
   'Permanently delete this space. Conversations and data will be moved to the default space.':
     'Supprimer définitivement cet espace. Les conversations et les données seront déplacées vers l’espace par défaut.',
-  'Cancel': 'Annuler',
+  Cancel: 'Annuler',
   'Confirm Delete': 'Confirmer la suppression',
-  'Advanced': 'Avancé',
+  Advanced: 'Avancé',
   'HuggingFace Host': 'Hôte HuggingFace',
   'Custom HuggingFace mirror or proxy URL for enterprise environments (e.g. JFrog Artifactory). Leave empty to use the official servers.':
-    'URL du miroir ou proxy HuggingFace personnalisé pour les environnements d&apos;entreprise (ex. JFrog Artifactory). Laisser vide pour utiliser les serveurs officiels.',
+    'URL du miroir ou proxy HuggingFace personnalisé pour les environnements d’entreprise (ex. JFrog Artifactory). Laisser vide pour utiliser les serveurs officiels.',
+  'Privacy Mode': 'Mode confidentialité',
+  'Full Privacy Mode': 'Mode confidentialité totale',
+  'When enabled, absolutely no outgoing network calls are allowed. Only local LLM providers (Local, Ollama, LM Studio) are trusted. Data never leaves your device.':
+    'Lorsqu’il est activé, aucun appel réseau sortant n’est autorisé. Seuls les fournisseurs LLM locaux (Local, Ollama, LM Studio) sont approuvés. Les données ne quittent jamais votre appareil.',
+  'Toggle Privacy Mode': 'Activer/Désactiver le mode confidentialité',
+  'Privacy mode is active': 'Le mode confidentialité est actif',
+  'All outgoing network requests are blocked':
+    'Toutes les requêtes réseau sortantes sont bloquées',
+  'Only local/on-device LLM providers are available':
+    'Seuls les fournisseurs LLM locaux sont disponibles',
+  'Cloud providers (OpenAI, Anthropic, etc.) are disabled':
+    'Les fournisseurs cloud (OpenAI, Anthropic, etc.) sont désactivés',
+  'Workspace border indicates privacy mode':
+    'La bordure de l’espace de travail indique le mode confidentialité',
+  Blocked: 'Bloqué',
+  Trusted: 'Approuvé',
 } as const

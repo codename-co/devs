@@ -12,11 +12,13 @@ import type { LLMProvider } from '@/types'
 import type { IconName } from '@/lib/types'
 import localI18n from '../i18n'
 import { PROVIDERS } from '../providers'
+import { usePrivacyMode } from '@/hooks/usePrivacyMode'
 
 export function ProviderSelect() {
   const { lang, t } = useI18n(localI18n)
   const navigate = useNavigate()
   const location = useLocation()
+  const { isProviderAllowed } = usePrivacyMode()
 
   const handleSelectProvider = (provider: LLMProvider) => {
     navigate(`${location.pathname}#settings/providers/add/${provider}`, {
@@ -24,10 +26,14 @@ export function ProviderSelect() {
     })
   }
 
+  const providers = PROVIDERS(lang, t).filter(
+    (p) => isProviderAllowed(p.provider),
+  )
+
   return (
     <div data-testid="llm-providers" className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
-        {PROVIDERS(lang, t).map((provider) => (
+        {providers.map((provider) => (
           <Card
             key={provider.provider}
             className="h-20 hover:bg-primary-50"
