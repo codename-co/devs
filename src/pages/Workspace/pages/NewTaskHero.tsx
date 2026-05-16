@@ -232,7 +232,18 @@ export function NewTaskHero({
   )
 
   const onSubmitTask = useCallback(
-    async (cleanedPrompt?: string, mentionedAgent?: Agent) => {
+    async (
+      cleanedPrompt?: string,
+      mentionedAgent?: Agent,
+      _mentionedMethodology?: unknown,
+      mentionedSkills?: InstalledSkill[],
+      mentionedConnectors?: Array<{
+        id: string
+        name: string
+        provider: string
+        accountEmail?: string
+      }>,
+    ) => {
       const promptToUse = cleanedPrompt ?? prompt
       if (!promptToUse.trim() || isSending) return
 
@@ -246,6 +257,7 @@ export function NewTaskHero({
         if (mode === 'studio') intent = 'media'
         else if (mode === 'app') intent = 'app'
         else if (mode === 'agent') intent = 'agent'
+        else if (agent.id !== 'devs') intent = 'chat'
         else intent = 'task'
 
         const attachments =
@@ -265,6 +277,8 @@ export function NewTaskHero({
           intent,
           primaryAgentId: agent.id,
           attachments,
+          mentionedSkills: mentionedSkills?.map((s) => s.name),
+          mentionedConnectors: mentionedConnectors?.map((c) => c.name),
         })
 
         sessionStorage.removeItem('pendingPrompt')

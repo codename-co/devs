@@ -7,7 +7,7 @@ import {
 } from '@/hooks'
 import { useLiveMap, useSyncReady } from '@/lib/yjs'
 import { sessions as sessionsMap } from '@/lib/yjs'
-import { useAgents } from '@/stores/agentStore'
+import { useAgentsSeparated } from '@/stores/agentStore'
 import {
   useActiveSpaceId,
   entityBelongsToSpace,
@@ -326,7 +326,8 @@ export function useThreads(): {
   const tasks = useTasks()
   const conversations = useFullyDecryptedConversations()
   const allArtifacts = useArtifacts()
-  const agents = useAgents()
+  const { customAgents, builtInAgents } = useAgentsSeparated()
+  const agents = useMemo(() => [...customAgents, ...builtInAgents], [customAgents, builtInAgents])
   const studioEntries = useStudioEntries()
   const allSessions = useLiveMap(sessionsMap)
   const { isRead } = useReadStatus()
