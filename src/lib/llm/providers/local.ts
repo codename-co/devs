@@ -154,6 +154,22 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   /**
+   * Detect memory allocation errors (e.g., ArrayBuffer too large for the browser).
+   * This happens when a model's weight file exceeds the browser's memory limits.
+   */
+  private static isMemoryAllocationError(error: unknown): boolean {
+    if (error instanceof RangeError) {
+      const msg = error.message.toLowerCase()
+      return (
+        msg.includes('array buffer allocation failed') ||
+        msg.includes('invalid array buffer length') ||
+        msg.includes('out of memory')
+      )
+    }
+    return false
+  }
+
+  /**
    * Determine the best dtype for a model based on its name and WebGPU device limits.
    * ONNX-web models are pre-quantized and should use q4f16 to avoid GPU buffer overflow.
    * Falls back to fp16 for other models, then fp32 as last resort.
@@ -183,8 +199,20 @@ export class LocalLLMProvider implements LLMProviderInterface {
       return 'q4f16'
     }
 
-    // For other ONNX community models, prefer fp16 to stay within GPU buffer limits
+    // For ONNX community models, choose dtype based on model size
+    // Models > ~500M params in fp16 can exceed browser ArrayBuffer limits
     if (lower.includes('onnx')) {
+      // Detect large models (≥1B params) by common naming conventions
+      const sizeMatch = lower.match(/(\d+(?:\.\d+)?)(b|m)/)
+      if (sizeMatch) {
+        const size = parseFloat(sizeMatch[1])
+        const unit = sizeMatch[2]
+        const paramsInM = unit === 'b' ? size * 1000 : size
+        // Models ≥ 500M params: use q4f16 to keep files under browser memory limits
+        if (paramsInM >= 500) {
+          return 'q4f16'
+        }
+      }
       return 'fp16'
     }
 
@@ -236,6 +264,24 @@ export class LocalLLMProvider implements LLMProviderInterface {
 
       return generator
     } catch (error: unknown) {
+      // If memory allocation fails, the model is too large for this browser/device
+      if (LocalLLMProvider.isMemoryAllocationError(error)) {
+        console.error(
+          `[LOCAL-LLM] Model "${modelName}" is too large for browser memory (dtype: ${dtype}). ` +
+            'Try a smaller model or a quantized variant (e.g., an ONNX-web model).',
+        )
+        LocalLLMProvider.progressCallback?.({
+          status: 'error',
+          progress: 0,
+          modelName,
+        })
+        throw new Error(
+          `Model "${modelName}" is too large to load in the browser. ` +
+            'The model weights exceed the maximum memory that can be allocated. ' +
+            'Please choose a smaller model or a quantized variant (look for models ending in "-ONNX-web").',
+        )
+      }
+
       // If WebGPU loading itself fails, try WASM fallback automatically
       if (
         !LocalLLMProvider.useWasmFallback &&
