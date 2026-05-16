@@ -125,6 +125,7 @@ export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
     async (type: STTProviderType) => {
       try {
         setIsLoading(true)
+        setIsSTTReady(false)
         setError(null)
 
         // Cleanup existing
