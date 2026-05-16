@@ -61,7 +61,7 @@ export async function executeSingleAgent(
     })
 
     // Find the best existing agent for this task
-    const agentSpec = analysis.suggestedAgents[0] || {
+    const agentSpec = analysis.suggestedAgents?.[0] || {
       name: 'Task Executor',
       role: 'General Task Executor',
       requiredSkills: analysis.requiredSkills,

@@ -667,7 +667,7 @@ export async function findBestAgent(
     .filter((a) => !(a as any).deletedAt)
     .map((agent) => {
       let score = 0
-      for (const skill of spec.requiredSkills) {
+      for (const skill of spec.requiredSkills ?? []) {
         const lower = skill.toLowerCase()
         if (agent.tags?.some((t) => t.toLowerCase() === lower)) score += 3
         if (agent.role.toLowerCase().includes(lower)) score += 2
