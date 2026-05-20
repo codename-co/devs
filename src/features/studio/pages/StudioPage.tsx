@@ -379,6 +379,7 @@ export function StudioPage() {
       'fal',
       'huggingface',
       'openai-compatible',
+      'lm-studio',
       'custom',
       'ollama',
     ]

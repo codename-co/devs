@@ -153,7 +153,7 @@ export interface LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string>
-  validateApiKey(apiKey: string): Promise<boolean>
+  validateApiKey(apiKey: string, baseUrl?: string): Promise<boolean>
   getAvailableModels?(config?: Partial<LLMConfig>): Promise<string[]>
 }
 
@@ -373,9 +373,10 @@ export class LLMService {
   static async validateApiKey(
     provider: LLMProvider,
     apiKey: string,
+    baseUrl?: string,
   ): Promise<boolean> {
     const implementation = this.getProvider(provider)
-    return implementation.validateApiKey(apiKey)
+    return implementation.validateApiKey(apiKey, baseUrl)
   }
 
   static async getAvailableModels(
@@ -413,11 +414,13 @@ import {
   ClaudeCodeProvider,
   ChatJimmyProvider,
   GitHubCopilotProvider,
+  LMStudioProvider,
   CustomProvider,
 } from './providers'
 
 // Initialize providers after LLMService is defined
 LLMService.registerProvider('local', new LocalLLMProvider())
+LLMService.registerProvider('lm-studio', new LMStudioProvider())
 LLMService.registerProvider('ollama', new OllamaProvider())
 LLMService.registerProvider('openai', new OpenAIProvider())
 LLMService.registerProvider('anthropic', new AnthropicProvider())

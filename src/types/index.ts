@@ -260,6 +260,7 @@ export type LLMProvider =
   | 'openrouter'
   | 'huggingface'
   | 'openai-compatible'
+  | 'lm-studio'
   | 'claude-code'
   | 'chatjimmy'
   | 'github-copilot'

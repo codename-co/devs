@@ -133,9 +133,9 @@ export const ThreadPreview = memo(function ThreadPreview({
       >
         <div className="text-muted flex flex-col items-center gap-3">
           <Icon name="MultiBubble" size="2xl" className="opacity-30" />
-          <p className="text-sm">Select a thread to preview</p>
+          <p className="text-sm">{t('Select a thread to preview')}</p>
           <div className="flex items-center gap-2 text-xs">
-            <Kbd>j</Kbd>/<Kbd>k</Kbd> to navigate
+            <Kbd>j</Kbd>/<Kbd>k</Kbd> {t('to navigate')}
           </div>
         </div>
       </div>
@@ -158,18 +158,18 @@ export const ThreadPreview = memo(function ThreadPreview({
               <ToolbarBtn
                 icon="Xmark"
                 onClick={onClose ?? onDeselect}
-                tooltip="Close (Esc)"
+                tooltip={t('Close (Esc)')}
               />
               <ToolbarBtn
                 icon={isFullscreen ? 'Collapse' : 'Expand'}
                 onClick={toggleFullscreen}
-                tooltip={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                tooltip={isFullscreen ? t('Exit fullscreen') : t('Fullscreen')}
               />
               {onTogglePin && isHD && (
                 <ToolbarBtn
                   icon={isPinned ? 'PinSolid' : 'Pin'}
                   onClick={onTogglePin}
-                  tooltip={isPinned ? 'Unpin' : 'Pin'}
+                  tooltip={isPinned ? t('Unpin') : t('Pin')}
                 />
               )}
               <ToolbarBtn
@@ -196,7 +196,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                     size="sm"
                     variant="ghost"
                     className="text-muted hover:text-foreground"
-                    aria-label="More actions"
+                    aria-label={t('More actions')}
                   >
                     <Icon name="MoreVert" />
                   </Button>
@@ -234,8 +234,10 @@ export const ThreadPreview = memo(function ThreadPreview({
               {isActive && pagination && goToPrevious && goToNext && (
                 <>
                   <span className="text-muted text-xs tabular-nums">
-                    {pagination.current} of{' '}
-                    {formatNumber(pagination.total, lang)}
+                    {t('{current} of {total}', {
+                      current: String(pagination.current),
+                      total: formatNumber(pagination.total, lang),
+                    })}
                   </span>
                   <div className="flex items-center gap-0.5">
                     <ToolbarBtn
@@ -244,7 +246,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                       disabled={pagination.current <= 1}
                       tooltip={
                         <>
-                          Previous <Kbd>j</Kbd>
+                          {t('Previous')} <Kbd>j</Kbd>
                         </>
                       }
                     />
@@ -254,7 +256,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                       disabled={pagination.current >= pagination.total}
                       tooltip={
                         <>
-                          Next <Kbd>k</Kbd>
+                          {t('Next')} <Kbd>k</Kbd>
                         </>
                       }
                     />
@@ -284,7 +286,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                       : 'default'
                 }
               >
-                {thread.source.task?.status?.replace('_', ' ') ?? 'Task'}
+                {thread.source.task?.status?.replace('_', ' ') ?? t('Task')}
               </Chip>
             )}
             {thread.kind === 'session' && (
@@ -302,7 +304,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                         : 'default'
                 }
               >
-                {thread.source.session?.status ?? 'Session'}
+                {thread.source.session?.status ?? t('Session')}
               </Chip>
             )}
 
@@ -403,7 +405,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                       content={
                         thread.source.task?.description ??
                         thread.snippet ??
-                        'No content'
+                        t('No content')
                       }
                     />
                   </div>
@@ -440,7 +442,7 @@ export const ThreadPreview = memo(function ThreadPreview({
                     content={
                       thread.source.task?.description ??
                       thread.snippet ??
-                      'No content'
+                      t('No content')
                     }
                   />
                 </div>
@@ -464,7 +466,7 @@ export const ThreadPreview = memo(function ThreadPreview({
           <div className="border-divider bg-background mx-2 flex max-h-[50%] min-h-0 flex-col rounded-xl border">
             <div className="border-divider flex items-center justify-between border-b px-3 py-2">
               <span className="text-muted text-xs font-medium uppercase tracking-wide">
-                Source
+                {t('Source')}
               </span>
               <Button
                 isIconOnly
@@ -506,7 +508,7 @@ export const ThreadPreview = memo(function ThreadPreview({
           <div className="border-divider bg-background mx-2 flex max-h-[50%] min-h-0 flex-col rounded-xl border">
             <div className="border-divider flex items-center justify-between border-b px-3 py-2">
               <span className="text-muted text-xs font-medium uppercase tracking-wide">
-                Conversation Envelope
+                {t('Conversation Envelope')}
               </span>
               <Button
                 isIconOnly

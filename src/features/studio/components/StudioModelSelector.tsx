@@ -57,6 +57,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   replicate: 'RefreshDouble',
   huggingface: 'HuggingFace',
   'openai-compatible': 'Internet',
+  'lm-studio': 'Lmstudio',
   custom: 'Internet',
   ollama: 'Ollama',
 }
@@ -72,6 +73,7 @@ const PROVIDER_NAMES: Record<string, string> = {
   replicate: 'Replicate',
   huggingface: 'Hugging Face',
   'openai-compatible': 'OpenAI Compatible',
+  'lm-studio': 'LM Studio',
   custom: 'Custom',
   ollama: 'Ollama',
 }
@@ -79,6 +81,7 @@ const PROVIDER_NAMES: Record<string, string> = {
 // Providers that fetch models dynamically from the server
 const DYNAMIC_MODEL_PROVIDERS = new Set([
   'openai-compatible',
+  'lm-studio',
   'custom',
   'ollama',
 ])

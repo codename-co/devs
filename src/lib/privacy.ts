@@ -33,6 +33,7 @@ export const FULLY_TRUSTED_PROVIDERS: readonly LLMProvider[] = [
  * a private-network address, they are trusted; otherwise they are not.
  */
 export const CONDITIONALLY_TRUSTED_PROVIDERS: readonly LLMProvider[] = [
+  'lm-studio', // LM Studio on localhost:1234
   'ollama', // Typically runs on localhost:11434
   'openai-compatible', // LM Studio, vLLM, LocalAI, etc.
   'custom', // User-managed endpoint
@@ -118,9 +119,7 @@ export function isCredentialTrusted(credential: Credential): boolean {
  * Check whether a provider type is allowed in privacy mode.
  * For the "add provider" grid, we show fully trusted + conditionally trusted.
  */
-export function isProviderAllowedInPrivacyMode(
-  provider: LLMProvider,
-): boolean {
+export function isProviderAllowedInPrivacyMode(provider: LLMProvider): boolean {
   return getProviderTrustLevel(provider) !== 'untrusted'
 }
 

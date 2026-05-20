@@ -425,6 +425,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
           const isValid = await LLMService.validateApiKey(
             provider as LLMProvider,
             apiKey || 'local-no-key',
+            baseUrl,
           )
           if (!isValid) {
             errorToast(t('Invalid API key'))
@@ -447,7 +448,8 @@ export const useLLMModelStore = create<LLMModelStore>()(
             baseUrl:
               provider === 'custom' ||
               provider === 'ollama' ||
-              provider === 'openai-compatible'
+              provider === 'openai-compatible' ||
+              provider === 'lm-studio'
                 ? baseUrl
                 : undefined,
             timestamp: new Date(),
@@ -509,6 +511,7 @@ export const useLLMModelStore = create<LLMModelStore>()(
           const isValid = await LLMService.validateApiKey(
             credential.provider,
             apiKey || 'local-no-key',
+            baseUrl ?? credential.baseUrl,
           )
           if (!isValid) {
             errorToast(t('Invalid API key'))

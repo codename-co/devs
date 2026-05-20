@@ -19,6 +19,7 @@ export interface ProviderConfig {
   models: LLMModel[] | string[] | Promise<LLMModel[] | string[]>
   icon: IconName
   requiresBaseUrl?: boolean
+  defaultBaseUrl?: string
   apiKeyFormat?: string
   apiKeyPlaceholder?: string
   apiKeyPage?: string
@@ -145,6 +146,24 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     ),
   },
   {
+    provider: 'lm-studio',
+    name: 'LM Studio',
+    models: [],
+    icon: 'Lmstudio',
+    requiresBaseUrl: true,
+    defaultBaseUrl: 'http://localhost:1234',
+    optionalApiKey: true,
+    fetchModelsFromServer: true,
+    apiKeyPlaceholder: 'sk-... (optional)',
+    moreDetails: () => (
+      <>
+        <p className="font-medium">
+          {t('With LM Studio, run AI models, locally and privately.')}
+        </p>
+      </>
+    ),
+  },
+  {
     provider: 'ollama',
     name: 'Ollama',
     models: getModelsForProviderAsync('ollama'),
@@ -215,25 +234,15 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     fetchModelsFromServer: true,
   },
   {
-    provider: 'openai-compatible',
-    name: 'OpenAI Compatible',
+    provider: 'github-copilot',
+    name: 'GitHub Copilot',
     models: [],
-    icon: 'Internet',
-    requiresBaseUrl: true,
-    optionalApiKey: true,
+    icon: 'GitHub',
+    noServerUrl: true,
     fetchModelsFromServer: true,
-    apiKeyPlaceholder: 'sk-... (optional)',
-    moreDetails: () => (
-      <>
-        <p className="font-medium">Connect to any OpenAI-compatible API</p>
-        <p className="text-sm text-default-600">
-          Works with LM Studio, LocalAI, vLLM, Text Generation WebUI, Together
-          AI, Fireworks AI, and more.
-          <br />
-          API key is optional for local servers.
-        </p>
-      </>
-    ),
+    useDeviceFlow: true,
+    apiKeyPlaceholder: 'ghu_... (from VS Code) or github_pat_...',
+    apiKeyPage: 'https://github.com/settings/copilot',
   },
   {
     provider: 'claude-code',
@@ -282,36 +291,26 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
       </>
     ),
   },
-  ...(import.meta.env.DEV
-    ? ([
-        {
-          provider: 'chatjimmy',
-          name: 'ChatJimmy',
-          models: ['llama3.1-8B'],
-          icon: 'ChatBubble',
-          noApiKey: true,
-          noServerUrl: true,
-          apiKeyPage: 'https://chatjimmy.ai',
-        },
-      ] as ProviderConfig[])
-    : []),
   {
-    provider: 'github-copilot',
-    name: 'GitHub Copilot',
+    provider: 'openai-compatible',
+    name: 'OpenAI Compatible',
     models: [],
-    icon: 'GitHub',
-    noServerUrl: true,
-    fetchModelsFromServer: true,
-    useDeviceFlow: true,
-    apiKeyPlaceholder: 'ghu_... (from VS Code) or github_pat_...',
-    apiKeyPage: 'https://github.com/settings/copilot',
-  },
-  {
-    provider: 'custom',
-    name: 'Custom',
-    models: [],
-    icon: 'Server',
+    icon: 'Internet',
     requiresBaseUrl: true,
+    optionalApiKey: true,
+    fetchModelsFromServer: true,
+    apiKeyPlaceholder: 'sk-... (optional)',
+    moreDetails: () => (
+      <>
+        <p className="font-medium">Connect to any OpenAI-compatible API</p>
+        <p className="text-sm text-default-600">
+          Works with LM Studio, LocalAI, vLLM, Text Generation WebUI, Together
+          AI, Fireworks AI, and more.
+          <br />
+          API key is optional for local servers.
+        </p>
+      </>
+    ),
   },
   // Image generation providers
   {
@@ -351,5 +350,25 @@ export const PROVIDERS = (lang: Lang, t: any): ProviderConfig[] => [
     models: ['stability-ai/sdxl', 'bytedance/sdxl-lightning-4step'],
     icon: 'RefreshDouble',
     apiKeyPage: 'https://replicate.com/account/api-tokens',
+  },
+  ...(import.meta.env.DEV
+    ? ([
+        {
+          provider: 'chatjimmy',
+          name: 'ChatJimmy',
+          models: ['llama3.1-8B'],
+          icon: 'ChatBubble',
+          noApiKey: true,
+          noServerUrl: true,
+          apiKeyPage: 'https://chatjimmy.ai',
+        },
+      ] as ProviderConfig[])
+    : []),
+  {
+    provider: 'custom',
+    name: 'Custom',
+    models: [],
+    icon: 'Server',
+    requiresBaseUrl: true,
   },
 ]

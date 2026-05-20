@@ -257,7 +257,7 @@ function getPricingForModel(model: string): Pricing {
   const { provider, modelId } = parseProviderFromModel(model)
 
   // Local and self-hosted models are free — return zero pricing immediately
-  const FREE_PROVIDERS: LLMProvider[] = ['local', 'ollama']
+  const FREE_PROVIDERS: LLMProvider[] = ['local', 'ollama', 'lm-studio']
   if (provider && FREE_PROVIDERS.includes(provider)) {
     return pricingFromUsdPerMillion({
       inputUsdPerMillion: 0,

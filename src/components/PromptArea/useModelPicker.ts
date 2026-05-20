@@ -17,6 +17,7 @@ const PROVIDER_ICONS: Record<string, IconName> = {
   huggingface: 'HuggingFace',
   custom: 'Server',
   'openai-compatible': 'Internet',
+  'lm-studio': 'Lmstudio',
   'claude-code': 'Anthropic', // Claude Code API uses Claude models
   chatjimmy: 'ChatBubble',
   'github-copilot': 'GitHub',

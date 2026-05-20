@@ -1701,6 +1701,7 @@ export class ImageGenerationService {
     // OpenAI-compatible providers (LM Studio, LocalAI, vLLM, etc.)
     // Use dedicated provider with URL normalization and /chat/completions fallback
     this.providers.set('openai-compatible', new OpenAICompatibleImageProvider())
+    this.providers.set('lm-studio', new OpenAICompatibleImageProvider())
     this.providers.set('custom', new OpenAICompatibleImageProvider())
     this.providers.set('ollama', new OpenAICompatibleImageProvider())
   }

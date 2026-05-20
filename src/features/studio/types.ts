@@ -32,6 +32,7 @@ export type ImageProvider =
   | 'fal' // Fal.ai
   | 'huggingface' // Hugging Face Inference API
   | 'openai-compatible' // LM Studio, LocalAI, vLLM, etc.
+  | 'lm-studio' // LM Studio dedicated
   | 'custom' // Custom endpoint
   | 'ollama' // Ollama
 

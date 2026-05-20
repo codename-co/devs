@@ -34,11 +34,13 @@ export function ProviderForm({ provider }: ProviderFormProps) {
   const credentials = useLLMModelStore((state) => state.credentials)
   const addCredential = useLLMModelStore((state) => state.addCredential)
 
-  const [apiKey, setApiKey] = useState('')
-  const [baseUrl, setBaseUrl] = useState('')
-  const [isValidating, setIsValidating] = useState(false)
-
   const providerConfig = PROVIDERS(lang, t).find((p) => p.provider === provider)
+
+  const [apiKey, setApiKey] = useState('')
+  const [baseUrl, setBaseUrl] = useState(
+    providerConfig?.defaultBaseUrl || '',
+  )
+  const [isValidating, setIsValidating] = useState(false)
 
   const needsApiKey = !providerConfig?.noApiKey
   const hasGuidance = !!providerConfig?.apiKeyPage

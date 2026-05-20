@@ -117,23 +117,31 @@ describe('isCredentialTrusted', () => {
 
   it('trusts local provider regardless of URL', () => {
     expect(isCredentialTrusted(makeCredential('local'))).toBe(true)
-    expect(isCredentialTrusted(makeCredential('local', 'http://anything.com'))).toBe(true)
+    expect(
+      isCredentialTrusted(makeCredential('local', 'http://anything.com')),
+    ).toBe(true)
   })
 
   it('trusts ollama pointing to localhost', () => {
-    expect(isCredentialTrusted(makeCredential('ollama', 'http://localhost:11434'))).toBe(true)
+    expect(
+      isCredentialTrusted(makeCredential('ollama', 'http://localhost:11434')),
+    ).toBe(true)
     expect(isCredentialTrusted(makeCredential('ollama'))).toBe(true) // default = localhost
   })
 
   it('does not trust ollama pointing to remote URL', () => {
     expect(
-      isCredentialTrusted(makeCredential('ollama', 'https://my-cloud-ollama.com')),
+      isCredentialTrusted(
+        makeCredential('ollama', 'https://my-cloud-ollama.com'),
+      ),
     ).toBe(false)
   })
 
   it('trusts openai-compatible pointing to LM Studio (localhost)', () => {
     expect(
-      isCredentialTrusted(makeCredential('openai-compatible', 'http://localhost:1234')),
+      isCredentialTrusted(
+        makeCredential('openai-compatible', 'http://localhost:1234'),
+      ),
     ).toBe(true)
   })
 

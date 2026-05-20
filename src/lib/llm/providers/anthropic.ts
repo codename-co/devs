@@ -546,6 +546,7 @@ export class AnthropicProvider implements LLMProviderInterface {
       { id: string; name: string; input: string }
     > = new Map()
     let currentToolIndex = -1
+    let wasThinking = false
 
     while (true) {
       const { done, value } = await reader.read()
@@ -567,6 +568,7 @@ export class AnthropicProvider implements LLMProviderInterface {
               parsed.type === 'content_block_delta' &&
               parsed.delta?.type === 'thinking_delta'
             ) {
+              wasThinking = true
               yield `\n__THINKING_DELTA__${parsed.delta.thinking}`
             }
 
@@ -575,6 +577,11 @@ export class AnthropicProvider implements LLMProviderInterface {
               parsed.type === 'content_block_delta' &&
               parsed.delta?.type === 'text_delta'
             ) {
+              // Emit end marker when transitioning from thinking to text
+              if (wasThinking) {
+                wasThinking = false
+                yield '\n__THINKING_END__\n'
+              }
               yield parsed.delta.text
             }
 

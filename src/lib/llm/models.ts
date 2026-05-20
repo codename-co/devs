@@ -83,6 +83,7 @@ const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | string[] | null> = {
   ollama: null,
   huggingface: null,
   'openai-compatible': null,
+  'lm-studio': null, // LM Studio — local server, models fetched from /v1/models
   'claude-code': null, // Claude Code API - uses Claude models via local server
   chatjimmy: null, // ChatJimmy - unauthenticated, uses own model names
   'github-copilot': null, // GitHub Copilot - models fetched from GitHub Models catalog API
@@ -111,6 +112,7 @@ const CLOUD_PROVIDERS: LLMProvider[] = [
  */
 const LOCAL_INFERENCE_PROVIDERS: LLMProvider[] = [
   'local',
+  'lm-studio',
   'ollama',
   'openai-compatible',
   'huggingface',
@@ -563,6 +565,7 @@ const EMPTY_REGISTRY: ModelRegistry = {
   openrouter: [],
   huggingface: [],
   'openai-compatible': [],
+  'lm-studio': [],
   'claude-code': [],
   chatjimmy: [],
   'github-copilot': [],

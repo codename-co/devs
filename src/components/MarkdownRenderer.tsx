@@ -596,9 +596,20 @@ export const MarkdownRenderer = ({
           )
           if (thinkBlock) {
             return (
-              <details key={thinkBlockId} className="my-4">
+              <details
+                key={thinkBlockId}
+                className="my-4"
+                open={thinkBlock.processing || undefined}
+              >
                 <summary className="cursor-pointer">
-                  {thinkBlock.processing ? t('Thinking…') : t('Thoughts')}
+                  {thinkBlock.processing ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-current opacity-60" />
+                      {t('Thinking…')}
+                    </span>
+                  ) : (
+                    t('Thoughts')
+                  )}
                 </summary>
                 <div className="ml-4 text-sm text-gray-600 hover:text-gray-800 whitespace-pre-wrap">
                   {thinkBlock.content}
