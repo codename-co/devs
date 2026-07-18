@@ -1,7 +1,8 @@
-import { OpenAIProvider } from './openai'
 import { LLMConfig } from '@/types'
 import { LLMConfigWithTools, stripModelPrefix } from '../types'
-import { LLMMessage, LLMResponseWithTools } from '../index'
+import { LLMMessage, LLMResponseWithTools, LLMProviderInterface } from '../index'
+import { AiSdkProvider } from '../ai-sdk/adapter'
+import { makeCompatBinding } from '../ai-sdk/bindings'
 import { BRIDGE_URL } from '@/config/bridge'
 import type { NormalizedModel } from '@/lib/models-dev/types'
 
@@ -93,9 +94,27 @@ function isFinegrainedPAT(token: string): boolean {
   return token.startsWith('github_pat_')
 }
 
-export class GitHubCopilotProvider extends OpenAIProvider {
-  protected override baseUrl = `${BRIDGE_URL}/api/github-copilot-api`
+export class GitHubCopilotProvider implements LLMProviderInterface {
+  private readonly baseUrl = `${BRIDGE_URL}/api/github-copilot-api`
   private static readonly COPILOT_DEFAULT_MODEL = 'gpt-4o'
+
+  /**
+   * Copilot chat is OpenAI-compatible, so it rides the AI SDK openai-compatible
+   * binding (REPORT §4 Phase 3). Only the token exchange, base-URL selection,
+   * and model catalog below are Copilot-specific. A fresh provider is built per
+   * request because the resolved session token/base URL vary per credential.
+   */
+  private aiSdkFor(baseUrl: string): AiSdkProvider {
+    return new AiSdkProvider(() =>
+      Promise.resolve(
+        makeCompatBinding({
+          name: 'github-copilot',
+          defaultModel: GitHubCopilotProvider.COPILOT_DEFAULT_MODEL,
+          resolveBase: () => baseUrl,
+        }),
+      ),
+    )
+  }
 
   /** Required headers for all Copilot API calls */
   private static readonly COPILOT_HEADERS = {
@@ -213,7 +232,7 @@ export class GitHubCopilotProvider extends OpenAIProvider {
   // Chat
   // ---------------------------------------------------------------------------
 
-  override async chat(
+  async chat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): Promise<LLMResponseWithTools> {
@@ -225,7 +244,7 @@ export class GitHubCopilotProvider extends OpenAIProvider {
       ? GitHubCopilotProvider.getBaseUrlForToken(originalKey)
       : this.baseUrl
 
-    return super.chat(messages, {
+    return this.aiSdkFor(config?.baseUrl || baseUrl).chat(messages, {
       ...config,
       apiKey: copilotToken,
       baseUrl: config?.baseUrl || baseUrl,
@@ -236,7 +255,7 @@ export class GitHubCopilotProvider extends OpenAIProvider {
     })
   }
 
-  override async *streamChat(
+  async *streamChat(
     messages: LLMMessage[],
     config?: Partial<LLMConfig> & LLMConfigWithTools,
   ): AsyncIterableIterator<string> {
@@ -248,18 +267,21 @@ export class GitHubCopilotProvider extends OpenAIProvider {
       ? GitHubCopilotProvider.getBaseUrlForToken(originalKey)
       : this.baseUrl
 
-    yield* super.streamChat(messages, {
-      ...config,
-      apiKey: copilotToken,
-      baseUrl: config?.baseUrl || baseUrl,
-      model: stripModelPrefix(
-        config?.model,
-        GitHubCopilotProvider.COPILOT_DEFAULT_MODEL,
-      ),
-    })
+    yield* this.aiSdkFor(config?.baseUrl || baseUrl).streamChat(
+      messages,
+      {
+        ...config,
+        apiKey: copilotToken,
+        baseUrl: config?.baseUrl || baseUrl,
+        model: stripModelPrefix(
+          config?.model,
+          GitHubCopilotProvider.COPILOT_DEFAULT_MODEL,
+        ),
+      },
+    )
   }
 
-  override async validateApiKey(apiKey: string): Promise<boolean> {
+  async validateApiKey(apiKey: string): Promise<boolean> {
     try {
       if (isFinegrainedPAT(apiKey)) {
         // Validate PAT by fetching models from the catalog and confirming

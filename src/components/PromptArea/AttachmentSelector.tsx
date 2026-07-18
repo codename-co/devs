@@ -25,7 +25,7 @@ import { getEnabledSkills } from '@/stores/skillStore'
 import { getFileIcon } from '@/lib/utils'
 import { formatBytes } from '@/lib/format'
 import { useI18n } from '@/i18n'
-import { getProviders } from '@/features/connectors'
+import type { ProviderMetadata } from '@/features/connectors/types'
 import { useNavigate } from 'react-router-dom'
 
 type PanelView = 'main' | 'knowledge' | 'skills'
@@ -55,6 +55,7 @@ export function AttachmentSelector({
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([])
   const [loadingKnowledge, setLoadingKnowledge] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [providers, setProviders] = useState<ProviderMetadata[]>([])
   const [skillItems, setSkillItems] = useState<InstalledSkill[]>([])
   const [panelView, setPanelView] = useState<PanelView>('main')
   const [knowledgeSearch, setKnowledgeSearch] = useState('')
@@ -87,6 +88,19 @@ export function AttachmentSelector({
         setSkillsCount(getEnabledSkills().length)
       } catch {
         setSkillsCount(0)
+      }
+      // Lazy-load connector provider metadata so the (heavy) connectors
+      // feature chunk never lands in the boot graph (REPORT §4 Phase 1).
+      let cancelled = false
+      import('@/features/connectors')
+        .then(({ getProviders }) => {
+          if (!cancelled) setProviders(getProviders())
+        })
+        .catch(() => {
+          if (!cancelled) setProviders([])
+        })
+      return () => {
+        cancelled = true
       }
     } else {
       setPanelView('main')
@@ -377,7 +391,7 @@ export function AttachmentSelector({
 
   // --- Main panel ---
   const renderMainPanel = () => {
-    const providers = getProviders()
+    // `providers` is populated lazily by the isOpen effect above.
 
     // Mode items for the Create section
     const modeItems: { key: PromptMode; icon: IconName; label: string }[] = [

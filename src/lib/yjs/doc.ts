@@ -68,12 +68,34 @@ async function initPersistence(): Promise<void> {
     const p: IndexeddbPersistence = new IdbPersistence('devs', ydoc)
     persistence = p
 
-    // Wait for the provider to finish replaying stored updates
+    // Wait for the provider to finish replaying stored updates.
+    // NOTE: y-indexeddb decodes and `Y.applyUpdate`s the ENTIRE document on the
+    // main thread before firing 'synced'. This time is dominated by the total
+    // serialized doc size — including boot-irrelevant, high-volume maps such as
+    // `traces`/`spans` (see docs/revamp/YJS-HYDRATION.md). We time it so the
+    // cost is measurable, not anecdotal.
+    const t0 =
+      typeof performance !== 'undefined' ? performance.now() : Date.now()
     return new Promise<void>((resolve) => {
-      if (p.synced) {
+      const done = () => {
+        const t1 =
+          typeof performance !== 'undefined' ? performance.now() : Date.now()
+        const ms = Math.round(t1 - t0)
+        if (ms > 750) {
+          console.warn(
+            `[yjs] IndexedDB hydration took ${ms}ms — the single 'devs' doc is ` +
+              `large. Consider splitting high-volume maps (traces/spans) into a ` +
+              `lazy observability doc. See docs/revamp/YJS-HYDRATION.md.`,
+          )
+        } else {
+          console.log(`[yjs] IndexedDB hydration: ${ms}ms`)
+        }
         resolve()
+      }
+      if (p.synced) {
+        done()
       } else {
-        p.once('synced', () => resolve())
+        p.once('synced', done)
       }
     })
   })()

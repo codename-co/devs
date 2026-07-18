@@ -1,0 +1,9 @@
+{
+  "content": "Hello there!",
+  "finish_reason": "stop",
+  "usage": {
+    "completionTokens": 2,
+    "promptTokens": 9,
+    "totalTokens": 11
+  }
+}

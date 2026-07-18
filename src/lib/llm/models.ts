@@ -14,10 +14,7 @@
  */
 
 import type { LLMModel, LLMProvider, ModelCapabilities } from '@/types'
-import {
-  getModelsByProvider as getModelsDevByProvider,
-  getModel as getModelsDevModel,
-} from '@/lib/models-dev'
+import { getModelsByProvider as getModelsDevByProvider } from '@/lib/models-dev'
 import type { NormalizedModel } from '@/lib/models-dev/types'
 
 // =============================================================================
@@ -52,19 +49,6 @@ export interface EnhancedLLMModel extends LLMModel {
 // =============================================================================
 // Constants
 // =============================================================================
-
-/**
- * Mapping from models.dev provider IDs to DEVS LLMProvider types.
- * Useful for converting models.dev data to DEVS format.
- */
-export const MODELS_DEV_PROVIDER_MAP: Record<string, LLMProvider> = {
-  openai: 'openai',
-  anthropic: 'anthropic',
-  'google-genai': 'google',
-  'vertex-ai': 'vertex-ai',
-  mistral: 'mistral',
-  openrouter: 'openrouter',
-}
 
 /**
  * Reverse mapping from DEVS LLMProvider to models.dev provider ID(s).
@@ -319,65 +303,6 @@ export function inferLocalModelCapabilities(
 }
 
 /**
- * @deprecated Use inferLocalModelCapabilities instead
- */
-export function inferOllamaCapabilities(modelId: string): ModelCapabilities {
-  return inferLocalModelCapabilities(modelId, 'ollama')
-}
-
-/**
- * Infers capabilities for a dynamically discovered Ollama model (async version).
- * First checks the models.dev registry for the 'ollama' provider, then falls back
- * to local registry and pattern matching.
- *
- * @param modelId - The Ollama model ID (e.g., "llama3.2:3b", "llava:7b")
- * @returns Inferred capabilities for the model
- */
-export async function inferOllamaCapabilitiesAsync(
-  modelId: string,
-): Promise<ModelCapabilities> {
-  // Extract base name (before the size tag)
-  const baseName = modelId.split(':')[0].toLowerCase()
-
-  // First, try to get from models.dev ollama provider
-  try {
-    // Try exact match first
-    const exactMatch = await getModelsDevModel('ollama', modelId)
-    if (exactMatch) {
-      return normalizedModelToCapabilities(exactMatch)
-    }
-
-    // Try base name match (without size tag)
-    const baseMatch = await getModelsDevModel('ollama', baseName)
-    if (baseMatch) {
-      return normalizedModelToCapabilities(baseMatch)
-    }
-
-    // Get all ollama models and try fuzzy matching
-    const ollamaModels = await getModelsDevByProvider('ollama')
-    const matchedModel = ollamaModels.find(
-      (m) =>
-        m.id === `ollama/${modelId}` ||
-        m.id === `ollama/${baseName}` ||
-        m.id.endsWith(`/${baseName}`) ||
-        m.name.toLowerCase().includes(baseName),
-    )
-    if (matchedModel) {
-      return normalizedModelToCapabilities(matchedModel)
-    }
-  } catch (error) {
-    // models.dev fetch failed, fall back to sync method
-    console.warn(
-      '[models] models.dev lookup failed for ollama, using fallback:',
-      error,
-    )
-  }
-
-  // Fall back to sync method (local registry + pattern matching)
-  return inferLocalModelCapabilities(modelId, 'ollama')
-}
-
-/**
  * Converts a NormalizedModel's capabilities to DEVS ModelCapabilities.
  *
  * @param model - The normalized model from models.dev
@@ -397,95 +322,6 @@ function normalizedModelToCapabilities(
     // Cannot determine speed from models.dev data
     fast: false,
   }
-}
-
-/**
- * Gets a list of Ollama models with their inferred capabilities.
- * Merges JIT-discovered models with registry data.
- *
- * @param discoveredModelIds - Model IDs discovered from Ollama /api/tags
- * @returns Array of LLM models with capabilities
- */
-export function getOllamaModelsWithCapabilities(
-  discoveredModelIds: string[],
-): LLMModel[] {
-  return discoveredModelIds.map((id) => ({
-    id,
-    name: formatOllamaModelName(id),
-    capabilities: inferOllamaCapabilities(id),
-  }))
-}
-
-/**
- * Gets a list of Ollama models with their inferred capabilities (async version).
- * Uses models.dev registry for more accurate capability detection.
- *
- * @param discoveredModelIds - Model IDs discovered from Ollama /api/tags
- * @returns Promise resolving to array of LLM models with capabilities
- */
-export async function getOllamaModelsWithCapabilitiesAsync(
-  discoveredModelIds: string[],
-): Promise<LLMModel[]> {
-  const models = await Promise.all(
-    discoveredModelIds.map(async (id) => ({
-      id,
-      name: await formatOllamaModelNameAsync(id),
-      capabilities: await inferOllamaCapabilitiesAsync(id),
-    })),
-  )
-  return models
-}
-
-/**
- * Formats an Ollama model ID into a human-readable name.
- * E.g., "llama3.2:3b" → "Llama 3.2 3B"
- *
- * @param modelId - The raw model ID
- * @returns Formatted display name
- */
-function formatOllamaModelName(modelId: string): string {
-  // Check registry for existing name
-  const registry = getModelRegistry()
-  const registryModel = registry.ollama?.find((m) => m.id === modelId)
-  if (registryModel?.name) {
-    return registryModel.name
-  }
-
-  // Format: capitalize parts, handle version numbers
-  return formatLocalModelName(modelId)
-}
-
-/**
- * Formats an Ollama model ID into a human-readable name (async version).
- * Checks models.dev for official names first.
- *
- * @param modelId - The raw model ID
- * @returns Promise resolving to formatted display name
- */
-async function formatOllamaModelNameAsync(modelId: string): Promise<string> {
-  const baseName = modelId.split(':')[0].toLowerCase()
-
-  // Try models.dev first
-  try {
-    const model = await getModelsDevModel('ollama', modelId)
-    if (model?.name) {
-      return model.name
-    }
-
-    const baseModel = await getModelsDevModel('ollama', baseName)
-    if (baseModel?.name) {
-      // Append size tag if present
-      const sizeTag = modelId.includes(':') ? modelId.split(':')[1] : null
-      return sizeTag
-        ? `${baseModel.name} ${sizeTag.toUpperCase()}`
-        : baseModel.name
-    }
-  } catch {
-    // Fall through to sync method
-  }
-
-  // Fall back to sync method
-  return formatOllamaModelName(modelId)
 }
 
 /**
@@ -523,13 +359,6 @@ export function formatLocalModelName(modelId: string): string {
       return part.charAt(0).toUpperCase() + part.slice(1)
     })
     .join(' ')
-}
-
-/**
- * @deprecated Use formatLocalModelName instead
- */
-export function formatOllamaModelIdToPrettyName(modelId: string): string {
-  return formatLocalModelName(modelId)
 }
 
 // =============================================================================
@@ -648,48 +477,14 @@ export async function getModelsForProviderAsync(
     return registry[provider] || []
   }
 
-  // For cloud providers, try models.dev first
-  const modelsDevProviderIds = DEVS_TO_MODELS_DEV_MAP[provider]
-  if (modelsDevProviderIds) {
-    try {
-      // Handle single provider ID or array of provider IDs
-      const providerIdArray = Array.isArray(modelsDevProviderIds)
-        ? modelsDevProviderIds
-        : [modelsDevProviderIds]
-
-      // Fetch models from all mapped providers in parallel
-      const allModelsArrays = await Promise.all(
-        providerIdArray.map((id) => getModelsDevByProvider(id)),
-      )
-
-      // Flatten and deduplicate by model ID
-      const seenIds = new Set<string>()
-      const normalizedModels = allModelsArrays.flat().filter((model) => {
-        if (seenIds.has(model.id)) return false
-        seenIds.add(model.id)
-        return true
-      })
-
-      if (normalizedModels.length > 0) {
-        return normalizedModels.map((model) => ({
-          id: model.id,
-          name: model.name,
-          capabilities: {
-            vision: model.capabilities.vision,
-            tools: model.capabilities.tools,
-            thinking: model.capabilities.reasoning,
-            lowCost: model.pricing.inputPerMillion < 1.0,
-            highCost: model.pricing.inputPerMillion > 10.0,
-            fast: false, // Cannot determine from models.dev data
-          },
-        }))
-      }
-    } catch (error) {
-      console.warn(
-        `[models] Failed to fetch models from models.dev for ${provider}:`,
-        error,
-      )
-    }
+  // For cloud providers, try models.dev first (keeps the full `provider/model` id).
+  const models = await fetchModelsDevModels(provider)
+  if (models.length > 0) {
+    return models.map((model) => ({
+      id: model.id,
+      name: model.name,
+      capabilities: normalizedModelToCapabilities(model),
+    }))
   }
 
   // Fall back to model-registry.json
@@ -715,17 +510,6 @@ export function getModel(
 }
 
 /**
- * Get a specific model by provider and ID (async - supports all providers)
- */
-export async function getModelAsync(
-  provider: LLMProvider,
-  modelId: string,
-): Promise<LLMModel | undefined> {
-  const models = await getModelsForProviderAsync(provider)
-  return models.find((m) => m.id === modelId)
-}
-
-/**
  * Get model capabilities by provider and ID (sync - local/ollama only)
  */
 export function getModelCapabilities(
@@ -733,17 +517,6 @@ export function getModelCapabilities(
   modelId: string,
 ): ModelCapabilities | undefined {
   return getModel(provider, modelId)?.capabilities
-}
-
-/**
- * Get model capabilities by provider and ID (async - supports all providers)
- */
-export async function getModelCapabilitiesAsync(
-  provider: LLMProvider,
-  modelId: string,
-): Promise<ModelCapabilities | undefined> {
-  const model = await getModelAsync(provider, modelId)
-  return model?.capabilities
 }
 
 /**
@@ -856,25 +629,11 @@ export function modelHasCapabilities(
  * @returns Enhanced LLM model with pricing and limits
  */
 function normalizedToLLMModel(model: NormalizedModel): EnhancedLLMModel {
-  const { pricing, capabilities } = model
-
-  // Map capabilities from models.dev to DEVS ModelCapabilities
-  const mappedCapabilities: ModelCapabilities = {
-    vision: capabilities.vision,
-    tools: capabilities.tools,
-    thinking: capabilities.reasoning,
-    // lowCost: less than $1/M input tokens
-    lowCost: pricing.inputPerMillion < 1.0,
-    // highCost: more than $10/M input tokens
-    highCost: pricing.inputPerMillion > 10.0,
-    // fast: cannot be determined from models.dev data
-    fast: false,
-  }
-
+  const { pricing } = model
   return {
     id: model.id.split('/')[1] || model.id, // Extract model ID without provider prefix
     name: model.name,
-    capabilities: mappedCapabilities,
+    capabilities: normalizedModelToCapabilities(model),
     pricing: {
       inputPerMillion: pricing.inputPerMillion,
       outputPerMillion: pricing.outputPerMillion,
@@ -914,6 +673,32 @@ function getModelsDevProviderIds(provider: LLMProvider): string[] | null {
 }
 
 /**
+ * Fetch models.dev models for a DEVS provider across all its mapped provider
+ * IDs, flattened and de-duplicated by model id. Returns `[]` when the provider
+ * maps to nothing or the fetch fails. Single source of the fetch/flatten/dedupe
+ * logic shared by {@link getModelsForProviderAsync} and
+ * {@link getEnhancedModelsForProvider}.
+ */
+async function fetchModelsDevModels(
+  provider: LLMProvider,
+): Promise<NormalizedModel[]> {
+  const ids = getModelsDevProviderIds(provider)
+  if (!ids) return []
+  try {
+    const arrays = await Promise.all(ids.map((id) => getModelsDevByProvider(id)))
+    const seen = new Set<string>()
+    return arrays.flat().filter((m) => {
+      if (seen.has(m.id)) return false
+      seen.add(m.id)
+      return true
+    })
+  } catch (error) {
+    console.warn(`[models] models.dev fetch failed for ${provider}:`, error)
+    return []
+  }
+}
+
+/**
  * Gets enhanced models for a specific provider.
  * For cloud providers (openai, anthropic, google, etc.), fetches from models.dev.
  * For local providers (local, ollama), uses model-registry.json.
@@ -931,114 +716,13 @@ export async function getEnhancedModelsForProvider(
     return registryModels.map(registryToEnhancedModel)
   }
 
-  // For cloud providers, try models.dev first
-  const modelsDevProviderIds = getModelsDevProviderIds(provider)
-  if (modelsDevProviderIds) {
-    try {
-      // Fetch models from all mapped providers in parallel
-      const allModelsArrays = await Promise.all(
-        modelsDevProviderIds.map((id) => getModelsDevByProvider(id)),
-      )
-
-      // Flatten and deduplicate by model ID
-      const seenIds = new Set<string>()
-      const normalizedModels = allModelsArrays.flat().filter((model) => {
-        if (seenIds.has(model.id)) return false
-        seenIds.add(model.id)
-        return true
-      })
-
-      if (normalizedModels.length > 0) {
-        return normalizedModels.map(normalizedToLLMModel)
-      }
-    } catch (error) {
-      console.warn(
-        `[models] Failed to fetch models from models.dev for ${provider}, falling back to registry:`,
-        error,
-      )
-    }
+  // For cloud providers, try models.dev first (stripped id + pricing/limits).
+  const models = await fetchModelsDevModels(provider)
+  if (models.length > 0) {
+    return models.map(normalizedToLLMModel)
   }
 
   // Fall back to model-registry.json
   const registryModels = await getModelsForProviderAsync(provider)
   return registryModels.map(registryToEnhancedModel)
-}
-
-/**
- * Gets pricing information for a specific model.
- * Fetches from models.dev for cloud providers, returns undefined for local models.
- *
- * @param provider - The AI provider
- * @param modelId - The model identifier
- * @returns Pricing information per million tokens, or undefined if not available
- */
-export async function getModelPricing(
-  provider: LLMProvider,
-  modelId: string,
-): Promise<
-  | {
-      inputPerMillion: number
-      outputPerMillion: number
-      reasoningPerMillion?: number
-    }
-  | undefined
-> {
-  // Only cloud providers have pricing from models.dev
-  if (!isCloudProvider(provider)) {
-    return undefined
-  }
-
-  const modelsDevProviderIds = getModelsDevProviderIds(provider)
-  if (!modelsDevProviderIds) {
-    return undefined
-  }
-
-  try {
-    // Fetch models from all mapped providers in parallel
-    const allModelsArrays = await Promise.all(
-      modelsDevProviderIds.map((id) => getModelsDevByProvider(id)),
-    )
-    const allModels = allModelsArrays.flat()
-
-    // Find the model by ID across all provider models
-    const model = allModels.find(
-      (m) =>
-        m.id === modelId ||
-        m.id.endsWith(`/${modelId}`) ||
-        modelsDevProviderIds.some(
-          (providerId) => m.id === `${providerId}/${modelId}`,
-        ),
-    )
-
-    if (model) {
-      return {
-        inputPerMillion: model.pricing.inputPerMillion,
-        outputPerMillion: model.pricing.outputPerMillion,
-        reasoningPerMillion: model.pricing.reasoningPerMillion,
-      }
-    }
-  } catch (error) {
-    console.warn(
-      `[models] Failed to get pricing for ${provider}/${modelId}:`,
-      error,
-    )
-  }
-
-  return undefined
-}
-
-/**
- * Gets an enhanced model by provider and ID.
- * Fetches from models.dev for cloud providers, falls back to registry.
- *
- * @param provider - The AI provider
- * @param modelId - The model identifier
- * @returns The enhanced model, or undefined if not found
- */
-export async function getEnhancedModel(
-  provider: LLMProvider,
-  modelId: string,
-): Promise<EnhancedLLMModel | undefined> {
-  const models = await getEnhancedModelsForProvider(provider)
-  return models.find((m) => m.id === modelId)
 }

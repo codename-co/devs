@@ -299,7 +299,7 @@ describe('conversationStore', () => {
         .createConversation('agent-1', 'workflow-1')
       const afterCreation = new Date()
 
-      expect(conversation.timestamp).toBeInstanceOf(Date)
+      expect(typeof conversation.timestamp).toBe('string')
       expect(new Date(conversation.timestamp).getTime()).toBeGreaterThanOrEqual(
         beforeCreation.getTime(),
       )
@@ -335,7 +335,7 @@ describe('conversationStore', () => {
               id: 'msg-uuid-1',
               role: 'user',
               content: 'Hello world',
-              timestamp: expect.any(Date),
+              timestamp: expect.any(String),
             }),
           ]),
         }),
@@ -880,7 +880,7 @@ describe('conversationStore', () => {
             expect.objectContaining({
               id: 'msg-1',
               isPinned: true,
-              pinnedAt: expect.any(Date),
+              pinnedAt: expect.any(String),
             }),
           ]),
         }),

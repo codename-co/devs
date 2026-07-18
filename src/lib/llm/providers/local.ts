@@ -1,38 +1,48 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
-import {
-  pipeline,
-  env,
-  TextGenerationPipeline,
-  TextStreamer,
-} from '@huggingface/transformers'
+import type { TextGenerationPipeline } from '@huggingface/transformers'
 import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
 import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
 
-// Configure transformers.js for browser environment with persistent caching
-env.allowLocalModels = false
-env.allowRemoteModels = true
+// The `@huggingface/transformers` runtime (WebGPU/WASM, tens of MB) must never
+// land in the boot graph (REPORT §4 Phase 1). It is dynamically imported and
+// configured once, lazily, the first time a local model is actually used.
+type TransformersModule = typeof import('@huggingface/transformers')
+let transformersPromise: Promise<TransformersModule> | null = null
 
-// Configure caching - rely on browser's built-in HTTP cache for large files
-// Small files (<200MB) will be cached by service worker in Cache API
-// Large files will use browser's HTTP disk cache
-env.useBrowserCache = true
-env.useFSCache = false // Disable FS cache (not applicable in browser)
-configureTransformersHost()
+async function ensureTransformers(): Promise<TransformersModule> {
+  if (!transformersPromise) {
+    transformersPromise = import('@huggingface/transformers').then((mod) => {
+      const { env } = mod
 
-// Configure WASM backend
-if (env.backends.onnx?.wasm) {
-  env.backends.onnx.wasm.numThreads = 1
-  env.backends.onnx.wasm.proxy = false
+      // Configure transformers.js for browser environment with persistent caching
+      env.allowLocalModels = false
+      env.allowRemoteModels = true
+
+      // Rely on the browser's built-in HTTP cache for large files; small files
+      // (<200MB) are cached by the service worker in the Cache API.
+      env.useBrowserCache = true
+      env.useFSCache = false // Disable FS cache (not applicable in browser)
+      configureTransformersHost()
+
+      // Configure WASM backend
+      if (env.backends.onnx?.wasm) {
+        env.backends.onnx.wasm.numThreads = 1
+        env.backends.onnx.wasm.proxy = false
+      }
+
+      console.log('[LOCAL-LLM] 🔧 Cache configuration:', {
+        useBrowserCache: env.useBrowserCache,
+        useFSCache: env.useFSCache,
+        note: 'Large files (>100MB) will use browser HTTP cache',
+      })
+
+      return mod
+    })
+  }
+  return transformersPromise
 }
-
-// Log cache configuration
-console.log('[LOCAL-LLM] 🔧 Cache configuration:', {
-  useBrowserCache: env.useBrowserCache,
-  useFSCache: env.useFSCache,
-  note: 'Large files (>100MB) will use browser HTTP cache',
-})
 
 // Expose debugging utilities globally in development
 if (typeof window !== 'undefined') {
@@ -242,6 +252,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     )
 
     try {
+      const { pipeline } = await ensureTransformers()
       const generator = await pipeline('text-generation', modelName, {
         device,
         dtype,
@@ -458,6 +469,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     let chunkIndex = 0
 
     // Create text streamer with callback
+    const { TextStreamer } = await ensureTransformers()
     const streamer = new TextStreamer(generator.tokenizer, {
       skip_prompt: true,
       callback_function: (text) => {

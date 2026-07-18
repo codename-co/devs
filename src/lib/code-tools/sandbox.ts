@@ -160,6 +160,9 @@ export async function executeInSandbox(
         }
         vm.setProp(vm.global, 'input', inputResult.value)
         inputResult.value.dispose()
+      } else {
+        // Always define `input` so user code can reference it safely
+        vm.setProp(vm.global, 'input', vm.undefined)
       }
 
       // Wrap code to handle export default
@@ -180,9 +183,28 @@ export async function executeInSandbox(
         }
       }
 
-      // Get the result value
-      const resultValue = vm.dump(result.value)
+      // The wrapped code always returns a Promise (async IIFE). Resolve it,
+      // pumping the QuickJS job queue so microtasks (awaited promises) settle.
+      const nativePromise = vm.resolvePromise(result.value)
+      vm.runtime.executePendingJobs()
+      const resolved = await nativePromise
       result.value.dispose()
+
+      if (resolved.error) {
+        const errorMessage = extractErrorMessage(vm.dump(resolved.error))
+        resolved.error.dispose()
+        const errorType = classifyError(errorMessage)
+        return {
+          success: false,
+          error: errorMessage,
+          errorType,
+          console: consoleLogs,
+        }
+      }
+
+      // Get the result value
+      const resultValue = vm.dump(resolved.value)
+      resolved.value.dispose()
 
       return {
         success: true,
@@ -226,17 +248,20 @@ function wrapCode(code: string, _input?: unknown): string {
       '__result__ = ',
     )
 
+    // Wrap in an async IIFE so top-level `await` is supported.
     return `
+(async () => {
 var __result__ = undefined;
 ${transformedCode}
-__result__;
+return __result__;
+})();
 `
   }
 
   // No export default - wrap to evaluate and return the last expression
-  // Use an IIFE to handle potential return statements
+  // Use an async IIFE to handle potential return statements and top-level await
   return `
-(function() {
+(async () => {
   ${code}
 })();
 `

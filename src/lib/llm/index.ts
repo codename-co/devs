@@ -35,7 +35,6 @@ export {
   getModelIdsForProvider,
   getModel,
   getModelCapabilities,
-  getModelCapabilitiesAsync,
   findModelsWithCapabilities,
   findBestModel,
   modelHasCapabilities,
@@ -399,38 +398,39 @@ export class LLMService {
 // Provider implementations
 export * from './providers'
 
-// Register all providers
+// Provider registration
+// Standard providers are backed by the AI SDK (REPORT §4 Phase 3); the
+// hand-rolled provider layer for them is deleted. Only irreducibly-special
+// providers keep a bespoke implementation: `local` (WebGPU/transformers.js
+// in-tab), `claude-code` (local CLI bridge), `vertex-ai` (browser OAuth),
+// `github-copilot` (device-flow token exchange + model catalog).
 import {
   LocalLLMProvider,
-  OpenAIProvider,
-  AnthropicProvider,
-  GoogleProvider,
   VertexAIProvider,
-  MistralProvider,
-  OllamaProvider,
-  OpenRouterProvider,
-  HuggingFaceProvider,
-  OpenAICompatibleProvider,
   ClaudeCodeProvider,
-  ChatJimmyProvider,
   GitHubCopilotProvider,
-  LMStudioProvider,
-  CustomProvider,
 } from './providers'
+import { aiSdkProvider } from './ai-sdk'
 
-// Initialize providers after LLMService is defined
+// AI SDK-backed providers
+for (const name of [
+  'openai',
+  'anthropic',
+  'google',
+  'mistral',
+  'openrouter',
+  'ollama',
+  'lm-studio',
+  'openai-compatible',
+  'custom',
+  'huggingface',
+  'chatjimmy',
+] as const) {
+  LLMService.registerProvider(name, aiSdkProvider(name))
+}
+
+// Special providers (bespoke, kept)
 LLMService.registerProvider('local', new LocalLLMProvider())
-LLMService.registerProvider('lm-studio', new LMStudioProvider())
-LLMService.registerProvider('ollama', new OllamaProvider())
-LLMService.registerProvider('openai', new OpenAIProvider())
-LLMService.registerProvider('anthropic', new AnthropicProvider())
-LLMService.registerProvider('google', new GoogleProvider())
 LLMService.registerProvider('vertex-ai', new VertexAIProvider())
-LLMService.registerProvider('mistral', new MistralProvider())
-LLMService.registerProvider('openrouter', new OpenRouterProvider())
-LLMService.registerProvider('huggingface', new HuggingFaceProvider())
-LLMService.registerProvider('openai-compatible', new OpenAICompatibleProvider())
 LLMService.registerProvider('claude-code', new ClaudeCodeProvider())
-LLMService.registerProvider('chatjimmy', new ChatJimmyProvider())
 LLMService.registerProvider('github-copilot', new GitHubCopilotProvider())
-LLMService.registerProvider('custom', new CustomProvider())

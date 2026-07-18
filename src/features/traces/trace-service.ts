@@ -547,6 +547,13 @@ export class TraceService {
       console.log('[TraceService] Initialized', {
         enabled: this.config.enabled,
       })
+
+      // Retention enforcement (`cleanupOldTraces`/`enforceMaxTraces`) previously
+      // had ZERO callers, so traces/spans — each holding full prompt/completion
+      // text — grew unbounded and bloated the single 'devs' Yjs doc, slowing
+      // boot hydration (see docs/revamp/YJS-HYDRATION.md). Run it once at idle,
+      // off the boot-critical path, to bound growth.
+      this.scheduleRetentionSweep()
     } catch (error) {
       console.error('[TraceService] Failed to initialize:', error)
       this.config = this.getDefaultConfig()
@@ -1380,6 +1387,45 @@ export class TraceService {
   // ============================================================================
   // Cleanup & Maintenance
   // ============================================================================
+
+  /** True once a retention sweep has been scheduled this session. */
+  private static retentionSweepScheduled = false
+
+  /**
+   * Schedule a one-shot retention sweep to run when the main thread is idle,
+   * keeping it off the boot-critical path. Bounds the growth of the
+   * traces/spans maps that otherwise slow Yjs hydration on every load.
+   */
+  static scheduleRetentionSweep(): void {
+    if (this.retentionSweepScheduled) return
+    this.retentionSweepScheduled = true
+
+    const run = () => {
+      void (async () => {
+        try {
+          const byAge = await this.cleanupOldTraces()
+          const byCount = await this.enforceMaxTraces()
+          if (byAge + byCount > 0) {
+            console.log(
+              `[TraceService] Retention sweep removed ${byAge + byCount} trace(s) ` +
+                `(${byAge} by age, ${byCount} by count).`,
+            )
+          }
+        } catch (err) {
+          console.warn('[TraceService] Retention sweep failed:', err)
+        }
+      })()
+    }
+
+    const ric = (globalThis as any).requestIdleCallback as
+      | ((cb: () => void, opts?: { timeout: number }) => number)
+      | undefined
+    if (typeof ric === 'function') {
+      ric(run, { timeout: 10_000 })
+    } else {
+      setTimeout(run, 5_000)
+    }
+  }
 
   /**
    * Clean up old traces based on retention policy

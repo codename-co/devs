@@ -6,61 +6,65 @@
 
 import type { STTProvider, STTProviderType } from '../types'
 import { WebSpeechSTTProvider } from './web-speech'
-import { MoonshineSTTProvider } from './moonshine'
-import { WhisperSTTProvider } from './whisper'
-import { ParakeetSTTProvider } from './parakeet'
-import { CohereSTTProvider } from './cohere'
-import { GraniteSTTProvider } from './granite'
-import { VibeVoiceSTTProvider } from './vibevoice'
 
 export { WebSpeechSTTProvider } from './web-speech'
-export { MoonshineSTTProvider } from './moonshine'
-export { WhisperSTTProvider } from './whisper'
-export { ParakeetSTTProvider } from './parakeet'
-export { CohereSTTProvider } from './cohere'
-export { GraniteSTTProvider } from './granite'
-export { VibeVoiceSTTProvider } from './vibevoice'
 
 /**
- * Create an STT provider instance
+ * Create an STT provider instance.
+ *
+ * Heavy transformers.js-backed providers are dynamically imported so the
+ * `@huggingface/transformers` runtime never lands in the boot graph
+ * (REPORT §4 Phase 1) — it loads only when the user selects that provider.
  */
-export function createSTTProvider(
+export async function createSTTProvider(
   type: STTProviderType,
   options?: { modelId?: string },
-): STTProvider {
+): Promise<STTProvider> {
   switch (type) {
     case 'web-speech':
       return new WebSpeechSTTProvider()
 
-    case 'moonshine':
+    case 'moonshine': {
+      const { MoonshineSTTProvider } = await import('./moonshine')
       return new MoonshineSTTProvider(
         options?.modelId || 'onnx-community/moonshine-base-ONNX',
       )
+    }
 
-    case 'whisper':
+    case 'whisper': {
+      const { WhisperSTTProvider } = await import('./whisper')
       return new WhisperSTTProvider(
         options?.modelId || 'onnx-community/whisper-small',
       )
+    }
 
-    case 'parakeet':
+    case 'parakeet': {
+      const { ParakeetSTTProvider } = await import('./parakeet')
       return new ParakeetSTTProvider(
         options?.modelId || 'onnx-community/parakeet-ctc-0.6b-ONNX',
       )
+    }
 
-    case 'cohere':
+    case 'cohere': {
+      const { CohereSTTProvider } = await import('./cohere')
       return new CohereSTTProvider(
         options?.modelId || 'onnx-community/cohere-transcribe-03-2026-ONNX',
       )
+    }
 
-    case 'granite':
+    case 'granite': {
+      const { GraniteSTTProvider } = await import('./granite')
       return new GraniteSTTProvider(
         options?.modelId || 'onnx-community/granite-4.0-1b-speech-ONNX',
       )
+    }
 
-    case 'vibevoice':
+    case 'vibevoice': {
+      const { VibeVoiceSTTProvider } = await import('./vibevoice')
       return new VibeVoiceSTTProvider(
         options?.modelId || 'onnx-community/VibeVoice-Realtime-0.5B-ONNX',
       )
+    }
 
     case 'gemini-live':
       // Gemini Live is handled separately as a bidirectional provider

@@ -20,9 +20,7 @@ vi.mock('@/stores/skillStore', () => ({
     Array.from(mockSkillsMap.values()).filter((s) => s.enabled),
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockExecute = vi.fn<(...args: any[]) => Promise<SandboxResult>>()
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockOnProgress = vi.fn((_cb?: any) => vi.fn())
 
 vi.mock('@/lib/sandbox', () => ({
@@ -37,7 +35,6 @@ vi.mock('@/lib/sandbox', () => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockResolveInputFiles = vi.fn(async (_refs?: any): Promise<any[]> => [])
 
 vi.mock('@/lib/skills/file-bridge', () => ({

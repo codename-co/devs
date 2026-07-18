@@ -529,6 +529,7 @@ export const fr: I18n = {
     'Examiner et gérer ce que les agents ont appris',
   'Select Agent': 'Sélectionner un agent',
   'All agents': 'Tous les agents',
+  'Global (all agents)': 'Global (tous les agents)',
   'Create Memory': 'Créer mémoire',
   'Generate Synthesis': 'Générer la synthèse',
   'Total Memories': 'Total des souvenirs',
@@ -553,6 +554,15 @@ export const fr: I18n = {
   'Memory Synthesis for {agent}': 'Synthèse mémoire pour {agent}',
   'Last updated: {date}': 'Dernière mise à jour : {date}',
   'No synthesis generated yet': 'Aucune synthèse générée pour le moment',
+  'Select an agent to view and edit their memory':
+    'Sélectionnez un agent pour voir et modifier sa mémoire',
+  'Memory for {agent}': 'Mémoire de {agent}',
+  'This is what the agent remembers across conversations. It is injected at the start of every chat. Edit it freely.':
+    "Voici ce dont l'agent se souvient d'une conversation à l'autre. C'est injecté au début de chaque discussion. Modifiez-le librement.",
+  'The agent has no memory yet. It will fill this in as you chat, or you can write notes here yourself.':
+    "L'agent n'a pas encore de mémoire. Il la remplira au fil des échanges, ou vous pouvez y écrire des notes vous-même.",
+  characters: 'caractères',
+  Compact: 'Compacter',
   'Delete Memory': 'Supprimer le souvenir',
   'Are you sure you want to delete this memory? This action cannot be undone.':
     'Êtes-vous sûr de vouloir supprimer ce souvenir ? Cette action est irréversible.',
@@ -604,6 +614,10 @@ export const fr: I18n = {
   'Failed to load memories': 'Échec du chargement des souvenirs',
   'Failed to create memory': 'Échec de la création du souvenir',
   'Failed to update memory': 'Échec de la mise à jour du souvenir',
+  'Memory updated': 'Mémoire mise à jour',
+  'Add a note': 'Ajouter une note',
+  'Edit memory': 'Modifier la mémoire',
+  'Write what this agent should remember, as short notes…': 'Écrivez ce que cet agent doit retenir, sous forme de notes courtes…',
   'Failed to delete memory': 'Échec de la suppression du souvenir',
   'Failed to load learning events':
     'Échec du chargement des événements d’apprentissage',
@@ -642,6 +656,14 @@ export const fr: I18n = {
   'Unpin message': 'Désépingler le message',
   'Message pinned successfully': 'Message épinglé avec succès',
   'Copy the answer': 'Copier la réponse',
+  'Remember for this agent': 'Mémoriser pour cet agent',
+  'Remember for all agents': 'Mémoriser pour tous les agents',
+  'Remember selection': 'Mémoriser la sélection',
+  'Selection actions': 'Actions de sélection',
+  'Added to this agent’s memory': 'Ajouté à la mémoire de cet agent',
+  'Added to global memory': 'Ajouté à la mémoire globale',
+  'Failed to save to memory': 'Échec de l\'enregistrement en mémoire',
+  'No agent selected for this memory': 'Aucun agent sélectionné pour cette mémoire',
   'Answer copied to clipboard': 'Réponse copiée dans le presse-papiers',
   'Copy prompt': 'Copier le prompt',
   'Prompt copied to clipboard': 'Prompt copié dans le presse-papiers',
@@ -1173,6 +1195,7 @@ export const fr: I18n = {
   'No knowledge items assigned': 'Aucun élément de connaissance assigné',
   'No memories yet \u2014 this agent will learn from conversations':
     'Pas encore de mémoires \u2014 cet agent apprendra des conversations',
+  'What this agent remembers': 'Ce dont cet agent se souvient',
   'No skills assigned': 'Aucune compétence assignée',
   Active: 'Actif',
   Inactive: 'Inactif',

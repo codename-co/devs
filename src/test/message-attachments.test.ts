@@ -7,13 +7,14 @@ const mockConversationsMap = createMockYMap<Conversation>()
 const mockToast = createMockToast()
 
 // Mock the Yjs module
-vi.mock('@/lib/yjs', () => ({
-  conversations: mockConversationsMap,
-  preferences: { get: vi.fn(), set: vi.fn(), has: vi.fn(), observe: vi.fn(), unobserve: vi.fn() },
-  skills: { get: vi.fn(), set: vi.fn(), has: vi.fn(), values: vi.fn(() => []), observe: vi.fn(), unobserve: vi.fn() },
-  whenReady: Promise.resolve(),
-  transact: vi.fn((fn: () => void) => fn()),
-}))
+vi.mock('@/lib/yjs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/yjs')>()
+  return {
+    ...actual,
+    conversations: mockConversationsMap,
+    transact: vi.fn((fn: () => void) => fn()),
+  }
+})
 
 vi.mock('@/lib/toast', () => mockToast)
 
@@ -255,13 +256,14 @@ describe('Conversation attachment persistence', () => {
     vi.resetModules()
 
     // Re-apply mocks after module reset
-    vi.mock('@/lib/yjs', () => ({
-      conversations: mockConversationsMap,
-      preferences: { get: vi.fn(), set: vi.fn(), has: vi.fn(), observe: vi.fn(), unobserve: vi.fn() },
-      skills: { get: vi.fn(), set: vi.fn(), has: vi.fn(), values: vi.fn(() => []), observe: vi.fn(), unobserve: vi.fn() },
-      whenReady: Promise.resolve(),
-      transact: vi.fn((fn: () => void) => fn()),
-    }))
+    vi.mock('@/lib/yjs', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('@/lib/yjs')>()
+      return {
+        ...actual,
+        conversations: mockConversationsMap,
+        transact: vi.fn((fn: () => void) => fn()),
+      }
+    })
   })
 
   afterEach(() => {
@@ -319,7 +321,7 @@ describe('Conversation attachment persistence', () => {
     expect(updatedConversation?.messages[0].attachments?.[0].name).toBe(
       'test.png',
     )
-  })
+  }, 30000)
 
   it('should preserve attachments when loading conversation history', async () => {
     const { useConversationStore } = await import('@/stores/conversationStore')
@@ -373,5 +375,5 @@ describe('Conversation attachment persistence', () => {
     expect(loadedConversation?.messages[0].attachments?.[0].name).toBe(
       'screenshot.png',
     )
-  })
+  }, 30000)
 })

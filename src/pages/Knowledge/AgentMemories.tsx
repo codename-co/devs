@@ -22,9 +22,14 @@ import {
 } from '@heroui/react'
 
 import { useAgentMemoryStore } from '@/stores/agentMemoryStore'
+import { useAgentMemoryDocument } from '@/stores/agentMemoryStore'
 import { MemoryReviewList } from '@/components/MemoryReview'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
-import { generateMemorySynthesis } from '@/lib/memory-learning-service'
+import { readAgentMemory,
+  writeAgentMemory,
+  compactAgentMemory,
+  GLOBAL_MEMORY_AGENT_ID,
+} from '@/lib/memory-learning-service'
 import {
   useDecryptedAgentMemories,
   useAgents,
@@ -73,7 +78,12 @@ export const AgentMemories: React.FC = () => {
     | MemoryCategory
     | 'all'
   const [memoryTab, setMemoryTab] = useState<string>('review')
-  const [isGeneratingSynthesis, setIsGeneratingSynthesis] = useState(false)
+
+  // Editable memory-document draft (KISS memory, docs/more/MEMORY.md)
+  const MEMORY_BUDGET = 4000
+  const [docDraft, setDocDraft] = useState('')
+  const [isSavingDoc, setIsSavingDoc] = useState(false)
+  const [isCompacting, setIsCompacting] = useState(false)
 
   // Get memories for selected agent using reactive hook
   const agentMemories = useDecryptedAgentMemories(selectedAgentId || undefined)
@@ -82,7 +92,6 @@ export const AgentMemories: React.FC = () => {
   const memories = selectedAgentId ? agentMemories : allMemories
 
   const {
-    memoryDocuments,
     isLoading: isMemoryLoading,
     loadMemoryDocument,
     approveMemory,
@@ -133,10 +142,18 @@ export const AgentMemories: React.FC = () => {
     isGlobal: false,
   })
 
-  // Only load memory document when agent changes (data loads automatically via reactive hooks)
+  // Load memory document when agent changes. readAgentMemory() also triggers a
+  // one-time lazy migration of legacy approved memories into the document.
   useEffect(() => {
     if (selectedAgentId) {
-      loadMemoryDocument(selectedAgentId)
+      readAgentMemory(selectedAgentId).then(() =>
+        loadMemoryDocument(selectedAgentId),
+      )
+      // The global scope only has a document (no review/approved entries),
+      // so jump straight to the Memory editor.
+      if (selectedAgentId === GLOBAL_MEMORY_AGENT_ID) {
+        setMemoryTab('synthesis')
+      }
     }
   }, [selectedAgentId, loadMemoryDocument])
 
@@ -145,10 +162,49 @@ export const AgentMemories: React.FC = () => {
     [agents, selectedAgentId],
   )
 
-  const memoryDocument = useMemo(
-    () => memoryDocuments.find((d) => d.agentId === selectedAgentId),
-    [memoryDocuments, selectedAgentId],
-  )
+  // Reactively read the agent's memory document so background writes
+  // (auto-capture, the `remember` tool) show up live without a reload.
+  const memoryDocument = useAgentMemoryDocument(selectedAgentId || undefined)
+
+  // Keep the editable draft in sync with the persisted document.
+  useEffect(() => {
+    setDocDraft(memoryDocument?.synthesis || '')
+  }, [memoryDocument?.synthesis, selectedAgentId])
+
+  const handleSaveDoc = async () => {
+    if (!selectedAgentId) return
+    setIsSavingDoc(true)
+    try {
+      await writeAgentMemory(selectedAgentId, docDraft)
+      await loadMemoryDocument(selectedAgentId)
+    } finally {
+      setIsSavingDoc(false)
+    }
+  }
+
+  const handleClearDoc = async () => {
+    if (!selectedAgentId) return
+    setIsSavingDoc(true)
+    try {
+      await writeAgentMemory(selectedAgentId, '')
+      await loadMemoryDocument(selectedAgentId)
+      setDocDraft('')
+    } finally {
+      setIsSavingDoc(false)
+    }
+  }
+
+  const handleCompactDoc = async () => {
+    if (!selectedAgentId) return
+    setIsCompacting(true)
+    try {
+      const compacted = await compactAgentMemory(selectedAgentId)
+      setDocDraft(compacted)
+      await loadMemoryDocument(selectedAgentId)
+    } finally {
+      setIsCompacting(false)
+    }
+  }
 
   // Compute stats from reactive memories
   const stats = useMemo(() => {
@@ -208,19 +264,6 @@ export const AgentMemories: React.FC = () => {
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     )
   }, [memories, selectedAgentId, filterCategory])
-
-  const handleGenerateSynthesis = async () => {
-    if (!selectedAgentId) return
-    setIsGeneratingSynthesis(true)
-    try {
-      await generateMemorySynthesis(selectedAgentId)
-      await loadMemoryDocument(selectedAgentId)
-    } catch (error) {
-      console.error('Failed to generate synthesis:', error)
-    } finally {
-      setIsGeneratingSynthesis(false)
-    }
-  }
 
   const handleDeleteMemory = async () => {
     if (memoryToDelete) {
@@ -329,18 +372,6 @@ export const AgentMemories: React.FC = () => {
               >
                 {t('Create Memory')}
               </Button>
-              <Button
-                size="sm"
-                color="primary"
-                variant="flat"
-                startContent={
-                  <Icon name="RefreshDouble" className="w-3.5 h-3.5" />
-                }
-                onPress={handleGenerateSynthesis}
-                isLoading={isGeneratingSynthesis}
-              >
-                {t('Generate Synthesis')}
-              </Button>
             </div>
           )}
 
@@ -404,13 +435,13 @@ export const AgentMemories: React.FC = () => {
               }
             />
 
-            {/* Synthesis Tab */}
+            {/* Memory Document Tab */}
             <Tab
               key="synthesis"
               title={
                 <div className="flex items-center gap-2">
                   <Icon name="Brain" size="sm" className="hidden lg:inline" />
-                  <span>{t('Synthesis')}</span>
+                  <span>{t('Memory')}</span>
                 </div>
               }
               isDisabled={!selectedAgentId}
@@ -424,6 +455,10 @@ export const AgentMemories: React.FC = () => {
                 title: t('Filter by agent'),
                 options: [
                   { key: 'all', label: t('All agents') },
+                  {
+                    key: GLOBAL_MEMORY_AGENT_ID,
+                    label: t('Global (all agents)'),
+                  },
                   ...agents.map((agent) => ({
                     key: agent.id,
                     label: agent.name,
@@ -524,38 +559,40 @@ export const AgentMemories: React.FC = () => {
             <div className="flex flex-col items-center justify-center py-16 text-default-400">
               <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">
-                {t('Select an agent to view their memory synthesis')}
+                {t('Select an agent to view and edit their memory')}
               </p>
             </div>
-          ) : memoryDocument?.synthesis ? (
+          ) : (
             <Card>
-              <CardHeader className="flex justify-between">
+              <CardHeader className="flex justify-between items-start">
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {t('Memory Synthesis for {agent}', {
-                      agent: selectedAgent?.name || selectedAgentId,
+                    {t('Memory for {agent}', {
+                      agent:
+                        selectedAgentId === GLOBAL_MEMORY_AGENT_ID
+                          ? t('Global (all agents)')
+                          : selectedAgent?.name || selectedAgentId,
                     })}
                   </h3>
                   <p className="text-sm text-default-500">
-                    {t('Last updated: {date}', {
-                      date: new Date(
-                        memoryDocument.lastSynthesisAt,
-                      ).toLocaleString(),
-                    })}
+                    {t(
+                      'This is what the agent remembers across conversations. It is injected at the start of every chat. Edit it freely.',
+                    )}
                   </p>
                 </div>
                 <Button
                   size="sm"
                   variant="flat"
+                  isDisabled={!docDraft.trim()}
                   startContent={<Icon name="Download" className="w-4 h-4" />}
                   onPress={() => {
-                    const blob = new Blob([memoryDocument.synthesis], {
+                    const blob = new Blob([docDraft], {
                       type: 'text/markdown',
                     })
                     const blobUrl = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = blobUrl
-                    a.download = `${selectedAgent?.name || 'agent'}-memory-synthesis.md`
+                    a.download = `${selectedAgent?.name || 'agent'}-memory.md`
                     a.click()
                     URL.revokeObjectURL(blobUrl)
                   }}
@@ -563,30 +600,75 @@ export const AgentMemories: React.FC = () => {
                   {t('Export')}
                 </Button>
               </CardHeader>
-              <CardBody>
-                <MarkdownRenderer content={memoryDocument.synthesis} />
+              <CardBody className="gap-3">
+                <Textarea
+                  value={docDraft}
+                  onValueChange={setDocDraft}
+                  minRows={10}
+                  maxRows={24}
+                  placeholder={t(
+                    'The agent has no memory yet. It will fill this in as you chat, or you can write notes here yourself.',
+                  )}
+                  classNames={{ input: 'font-mono text-sm' }}
+                />
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <span
+                    className={`text-xs ${
+                      docDraft.length > MEMORY_BUDGET
+                        ? 'text-danger'
+                        : 'text-default-400'
+                    }`}
+                  >
+                    {docDraft.length} / {MEMORY_BUDGET} {t('characters')}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      color="danger"
+                      isDisabled={!docDraft.trim() || isSavingDoc}
+                      startContent={<Icon name="Trash" className="w-4 h-4" />}
+                      onPress={handleClearDoc}
+                    >
+                      {t('Clear')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      color="secondary"
+                      isLoading={isCompacting}
+                      isDisabled={!docDraft.trim()}
+                      startContent={
+                        <Icon name="RefreshDouble" className="w-4 h-4" />
+                      }
+                      onPress={handleCompactDoc}
+                    >
+                      {t('Compact')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      color="primary"
+                      isLoading={isSavingDoc}
+                      isDisabled={
+                        docDraft === (memoryDocument?.synthesis || '')
+                      }
+                      startContent={<Icon name="Check" className="w-4 h-4" />}
+                      onPress={handleSaveDoc}
+                    >
+                      {t('Save')}
+                    </Button>
+                  </div>
+                </div>
+                {docDraft.trim() && (
+                  <div className="border-t border-default-200 pt-3">
+                    <p className="text-xs text-default-400 mb-2">
+                      {t('Preview')}
+                    </p>
+                    <MarkdownRenderer content={docDraft} />
+                  </div>
+                )}
               </CardBody>
             </Card>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-default-400">
-              <Icon name="Brain" className="w-12 h-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">
-                {t('No synthesis generated yet')}
-              </p>
-              <p className="text-sm text-center max-w-md mb-4">
-                {t(
-                  'Generate a synthesis to create a summary of all approved memories for this agent.',
-                )}
-              </p>
-              <Button
-                color="primary"
-                onPress={handleGenerateSynthesis}
-                isLoading={isGeneratingSynthesis}
-                startContent={<Icon name="RefreshDouble" className="w-4 h-4" />}
-              >
-                {t('Generate Synthesis')}
-              </Button>
-            </div>
           )}
         </div>
       )}

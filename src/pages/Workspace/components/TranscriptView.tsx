@@ -36,6 +36,42 @@ function toMs(d: Date | string | number): number {
   return typeof d === 'string' ? new Date(d).getTime() : d.getTime()
 }
 
+/**
+ * Safety cap: an incomplete model-load event (no `completedAt`) that started
+ * longer ago than this is treated as abandoned — e.g. the tab was closed
+ * mid-download or an error transition never fired — rather than "still running
+ * until now". Without this bound, a stale load event's end defaults to the
+ * present and overlaps every later session, so very old download/init events
+ * wrongly appear in unrelated tasks' Frames view.
+ */
+export const INCOMPLETE_LOAD_MAX_MS = 30 * 60 * 1000 // 30 minutes
+
+/** Effective end timestamp of a load event for timeframe comparisons. */
+export function loadEventEnd(
+  loadEvent: { startedAt: number; completedAt?: number },
+  now: number = Date.now(),
+): number {
+  if (loadEvent.completedAt != null) return loadEvent.completedAt
+  // No completion recorded: only treat as running-until-now when recent;
+  // otherwise it is stale and must not span up to the present.
+  return now - loadEvent.startedAt <= INCOMPLETE_LOAD_MAX_MS
+    ? now
+    : loadEvent.startedAt
+}
+
+/** Whether a load event's timeframe overlaps a session's [start, end] window. */
+export function loadEventOverlapsSession(
+  loadEvent: { startedAt: number; completedAt?: number },
+  sessionStart: number,
+  sessionEnd: number,
+  now: number = Date.now(),
+): boolean {
+  return (
+    loadEvent.startedAt <= sessionEnd &&
+    loadEventEnd(loadEvent, now) >= sessionStart
+  )
+}
+
 /** Convert Thread messages into a flat, chronological event list */
 function buildTranscriptEvents(messages: TMsg[]): TranscriptEvent[] {
   const events: TranscriptEvent[] = []
@@ -128,15 +164,19 @@ export const TranscriptView = memo(function TranscriptView({
     // Determine the session timeframe to find overlapping load events
     const session = thread.source.session
     if (session && allLoadEvents.length > 0) {
+      const now = Date.now()
       const sessionStart = toMs(session.createdAt)
       const sessionEnd = session.completedAt
         ? toMs(session.completedAt)
-        : Date.now()
+        : now
 
       for (const loadEvent of allLoadEvents) {
-        // Include load events whose timeframe overlaps with this session
-        const loadEnd = loadEvent.completedAt ?? Date.now()
-        if (loadEvent.startedAt <= sessionEnd && loadEnd >= sessionStart) {
+        // Include load events whose timeframe overlaps with this session.
+        // Stale, never-completed events are bounded so they don't leak into
+        // unrelated sessions (see loadEventEnd).
+        if (
+          loadEventOverlapsSession(loadEvent, sessionStart, sessionEnd, now)
+        ) {
           const isRunning = !loadEvent.completedAt
           const label =
             loadEvent.status === 'downloading'

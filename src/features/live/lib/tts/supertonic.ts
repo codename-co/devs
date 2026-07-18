@@ -18,8 +18,11 @@ import type {
   TTSAudioResult,
   TTSProviderType,
 } from '../types'
+import { SUPERTONIC_VOICES } from './supertonic-voices'
 import { pipeline, env } from '@huggingface/transformers'
 import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
+
+export { SUPERTONIC_VOICES } from './supertonic-voices'
 
 // Configure transformers.js
 env.allowLocalModels = false
@@ -37,81 +40,6 @@ type SupertonicLanguage = (typeof SUPERTONIC_LANGUAGES)[number]
 /**
  * Supertonic TTS 2 voices — 5 female + 5 male
  */
-export const SUPERTONIC_VOICES: TTSVoice[] = [
-  // Female voices
-  {
-    id: 'F1',
-    name: 'Female 1',
-    language: 'multilingual',
-    gender: 'female',
-    provider: 'supertonic',
-  },
-  {
-    id: 'F2',
-    name: 'Female 2',
-    language: 'multilingual',
-    gender: 'female',
-    provider: 'supertonic',
-  },
-  {
-    id: 'F3',
-    name: 'Female 3',
-    language: 'multilingual',
-    gender: 'female',
-    provider: 'supertonic',
-  },
-  {
-    id: 'F4',
-    name: 'Female 4',
-    language: 'multilingual',
-    gender: 'female',
-    provider: 'supertonic',
-  },
-  {
-    id: 'F5',
-    name: 'Female 5',
-    language: 'multilingual',
-    gender: 'female',
-    provider: 'supertonic',
-  },
-  // Male voices
-  {
-    id: 'M1',
-    name: 'Male 1',
-    language: 'multilingual',
-    gender: 'male',
-    provider: 'supertonic',
-  },
-  {
-    id: 'M2',
-    name: 'Male 2',
-    language: 'multilingual',
-    gender: 'male',
-    provider: 'supertonic',
-  },
-  {
-    id: 'M3',
-    name: 'Male 3',
-    language: 'multilingual',
-    gender: 'male',
-    provider: 'supertonic',
-  },
-  {
-    id: 'M4',
-    name: 'Male 4',
-    language: 'multilingual',
-    gender: 'male',
-    provider: 'supertonic',
-  },
-  {
-    id: 'M5',
-    name: 'Male 5',
-    language: 'multilingual',
-    gender: 'male',
-    provider: 'supertonic',
-  },
-]
-
 export class SupertonicTTSProvider implements TTSProvider {
   readonly type: TTSProviderType = 'supertonic'
 

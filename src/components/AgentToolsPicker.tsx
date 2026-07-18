@@ -10,19 +10,25 @@ import {
 
 import { Icon, Icons } from '@/components/Icon'
 import { useI18n } from '@/i18n'
-import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
+import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools/types'
 import type { KnowledgeToolName } from '@/lib/knowledge-tools/types'
-import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
+import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/types'
 import type { MathToolName } from '@/lib/math-tools/types'
+// Tool DEFINITIONS come from their light source modules (not the
+// `@/tools/plugins` barrel) to keep heavy handlers out of the boot graph.
 import {
   WIKIPEDIA_SEARCH_TOOL_DEFINITION,
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+} from '@/tools/plugins/wikipedia'
+import {
   WIKIDATA_SEARCH_TOOL_DEFINITION,
   WIKIDATA_ENTITY_TOOL_DEFINITION,
   WIKIDATA_SPARQL_TOOL_DEFINITION,
+} from '@/tools/plugins/wikidata'
+import {
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
-} from '@/tools/plugins'
+} from '@/tools/plugins/arxiv'
 import type { Tool } from '@/types'
 
 interface AgentToolsPickerProps {

@@ -40,7 +40,7 @@ export function FeaturesSection() {
   )
 
   const _autoMemoryLearning = userSettings(
-    (state) => state.autoMemoryLearning ?? false,
+    (state) => state.autoMemoryLearning ?? true,
   )
   const _setAutoMemoryLearning = userSettings(
     (state) => state.setAutoMemoryLearning,
@@ -231,7 +231,7 @@ export function FeaturesSection() {
             <p>{t('Auto Memory Learning')}</p>
             <p className="text-xs text-default-500">
               {t(
-                'Automatically extract learnable information from conversations to build agent memory',
+                'Quietly remember durable facts from your conversations in the background, so agents stay personalised over time. Runs invisibly and never appears in replies.',
               )}
             </p>
           </Switch>
