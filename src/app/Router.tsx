@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect, type ComponentType } from 'react'
 import { Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
 import { LanguageRedirect } from '@/components/LanguageRedirect'
 import { defaultLang, I18nProvider, Lang, langs } from '@/i18n'
@@ -6,56 +6,95 @@ import { userSettings } from '@/stores/userStore'
 import { setActiveSpaceId } from '@/stores/spaceStore'
 import { base64urlToUuid } from '@/lib/url'
 import { ALL_SPACES_ID, ALL_SPACES_URL_SEGMENT } from '@/types'
-import { StudioPage } from '@/features/studio/pages/StudioPage'
-import { AgentsNewPage } from '@/pages/Agents/new'
-import { AgentRunPage } from '@/pages/Agents/run'
-import { AgentsPage } from '@/pages/Agents'
-import { HistoryPage } from '@/pages/History'
-import DemoPage from '@/pages/Demo/index.mdx'
-import HTMLdemoPage from '@/pages/Demo/html.mdx'
-import DiagramPage from '@/pages/Demo/diagram.mdx'
-import { CodeSandboxPage } from '@/pages/Demo/CodeSandbox'
-import { ConversationTestsPage } from '@/pages/Demo/ConversationTests'
-import { TaskTimelineDemo } from '@/pages/Demo/TaskTimelineDemo'
-import { AboutPage } from '@/pages/About'
-import { PrivacyPage } from '@/pages/Privacy'
-import { TermsPage } from '@/pages/Terms'
+
+// The default (index) route ships in the boot graph — everything else is
+// route-level code-split so heavy features (studio, live, marketplace,
+// diagrams, comparisons…) never load on boot (REPORT §4 Phase 1).
 import { V2Page } from '@/pages/Workspace'
-import { TourPage, TourVideoPage } from '@/pages/Tour'
-import { OAuthCallbackPage } from '@/pages/OAuth'
-import { TaskPage } from '@/pages/Tasks/show'
-import { SessionPage } from '@/pages/Session'
-import { LivePage } from '@/features/live'
-import {
-  MarketplacePage,
-  DynamicAppRoute,
-  NewExtensionPage,
-  ExtensionEditorPage,
-} from '@/features/marketplace/pages'
-import {
-  CompareAgenticSeekPage,
-  CompareBase44Page,
-  CompareChatGPTPage,
-  CompareDataKitPage,
-  CompareDeepChatPage,
-  CompareDualitePage,
-  CompareHappyCapyPage,
-  CompareHugstonOnePage,
-  CompareKortixPage,
-  CompareLemonAIPage,
-  CompareLlamaPenPage,
-  CompareManusPage,
-  CompareMiniMaxPage,
-  CompareNextdocsPage,
-  CompareOpenManusPage,
-  CompareOpenWebUIPage,
-  CompareReplitPage,
-  CompareRomaPage,
-  CompareRunnerHPage,
-  CompareTracePage,
-  CompareV7GoPage,
-} from '@/pages/Compare'
-import { ComparePage } from '@/pages/Compare/index.tsx'
+
+/** Wrap a named export from a dynamic module as a `React.lazy` component. */
+function lazyNamed<T extends Record<string, unknown>>(
+  factory: () => Promise<T>,
+  name: keyof T,
+): ComponentType<Record<string, never>> {
+  return lazy(async () => ({
+    default: (await factory())[name] as ComponentType<Record<string, never>>,
+  }))
+}
+
+const StudioPage = lazyNamed(
+  () => import('@/features/studio/pages/StudioPage'),
+  'StudioPage',
+)
+const AgentsNewPage = lazyNamed(() => import('@/pages/Agents/new'), 'AgentsNewPage')
+const AgentRunPage = lazyNamed(() => import('@/pages/Agents/run'), 'AgentRunPage')
+const AgentsPage = lazyNamed(() => import('@/pages/Agents'), 'AgentsPage')
+const HistoryPage = lazyNamed(() => import('@/pages/History'), 'HistoryPage')
+const DemoPage = lazy(() => import('@/pages/Demo/index.mdx'))
+const HTMLdemoPage = lazy(() => import('@/pages/Demo/html.mdx'))
+const DiagramPage = lazy(() => import('@/pages/Demo/diagram.mdx'))
+const CodeSandboxPage = lazyNamed(
+  () => import('@/pages/Demo/CodeSandbox'),
+  'CodeSandboxPage',
+)
+const ConversationTestsPage = lazyNamed(
+  () => import('@/pages/Demo/ConversationTests'),
+  'ConversationTestsPage',
+)
+const TaskTimelineDemo = lazyNamed(
+  () => import('@/pages/Demo/TaskTimelineDemo'),
+  'TaskTimelineDemo',
+)
+const AboutPage = lazyNamed(() => import('@/pages/About'), 'AboutPage')
+const PrivacyPage = lazyNamed(() => import('@/pages/Privacy'), 'PrivacyPage')
+const TermsPage = lazyNamed(() => import('@/pages/Terms'), 'TermsPage')
+const TourPage = lazyNamed(() => import('@/pages/Tour'), 'TourPage')
+const TourVideoPage = lazyNamed(() => import('@/pages/Tour'), 'TourVideoPage')
+const OAuthCallbackPage = lazyNamed(
+  () => import('@/pages/OAuth'),
+  'OAuthCallbackPage',
+)
+const TaskPage = lazyNamed(() => import('@/pages/Tasks/show'), 'TaskPage')
+const SessionPage = lazyNamed(() => import('@/pages/Session'), 'SessionPage')
+const LivePage = lazyNamed(() => import('@/features/live'), 'LivePage')
+const MarketplacePage = lazyNamed(
+  () => import('@/features/marketplace/pages'),
+  'MarketplacePage',
+)
+const DynamicAppRoute = lazyNamed(
+  () => import('@/features/marketplace/pages'),
+  'DynamicAppRoute',
+)
+const NewExtensionPage = lazyNamed(
+  () => import('@/features/marketplace/pages'),
+  'NewExtensionPage',
+)
+const ExtensionEditorPage = lazyNamed(
+  () => import('@/features/marketplace/pages'),
+  'ExtensionEditorPage',
+)
+const ComparePage = lazyNamed(() => import('@/pages/Compare/index.tsx'), 'ComparePage')
+const CompareAgenticSeekPage = lazyNamed(() => import('@/pages/Compare'), 'CompareAgenticSeekPage')
+const CompareBase44Page = lazyNamed(() => import('@/pages/Compare'), 'CompareBase44Page')
+const CompareChatGPTPage = lazyNamed(() => import('@/pages/Compare'), 'CompareChatGPTPage')
+const CompareDataKitPage = lazyNamed(() => import('@/pages/Compare'), 'CompareDataKitPage')
+const CompareDeepChatPage = lazyNamed(() => import('@/pages/Compare'), 'CompareDeepChatPage')
+const CompareDualitePage = lazyNamed(() => import('@/pages/Compare'), 'CompareDualitePage')
+const CompareHappyCapyPage = lazyNamed(() => import('@/pages/Compare'), 'CompareHappyCapyPage')
+const CompareHugstonOnePage = lazyNamed(() => import('@/pages/Compare'), 'CompareHugstonOnePage')
+const CompareKortixPage = lazyNamed(() => import('@/pages/Compare'), 'CompareKortixPage')
+const CompareLemonAIPage = lazyNamed(() => import('@/pages/Compare'), 'CompareLemonAIPage')
+const CompareLlamaPenPage = lazyNamed(() => import('@/pages/Compare'), 'CompareLlamaPenPage')
+const CompareManusPage = lazyNamed(() => import('@/pages/Compare'), 'CompareManusPage')
+const CompareMiniMaxPage = lazyNamed(() => import('@/pages/Compare'), 'CompareMiniMaxPage')
+const CompareNextdocsPage = lazyNamed(() => import('@/pages/Compare'), 'CompareNextdocsPage')
+const CompareOpenManusPage = lazyNamed(() => import('@/pages/Compare'), 'CompareOpenManusPage')
+const CompareOpenWebUIPage = lazyNamed(() => import('@/pages/Compare'), 'CompareOpenWebUIPage')
+const CompareReplitPage = lazyNamed(() => import('@/pages/Compare'), 'CompareReplitPage')
+const CompareRomaPage = lazyNamed(() => import('@/pages/Compare'), 'CompareRomaPage')
+const CompareRunnerHPage = lazyNamed(() => import('@/pages/Compare'), 'CompareRunnerHPage')
+const CompareTracePage = lazyNamed(() => import('@/pages/Compare'), 'CompareTracePage')
+const CompareV7GoPage = lazyNamed(() => import('@/pages/Compare'), 'CompareV7GoPage')
 
 // Redirect components for old paths → history tabs
 const LibraryRedirect = () => <Navigate to="../history" replace />
@@ -177,7 +216,9 @@ export default Router
 const RootLayout = () => (
   <>
     <LanguageRedirect />
-    <Outlet />
+    <Suspense fallback={null}>
+      <Outlet />
+    </Suspense>
   </>
 )
 
@@ -201,7 +242,11 @@ const LanguagePath = () => {
   // Let DynamicAppRoute handle it instead of showing 404
   // This prevents errors like "Invalid language tag" when using lang in toLocaleString()
   if (!langs.includes(lang)) {
-    return <DynamicAppRoute />
+    return (
+      <Suspense fallback={null}>
+        <DynamicAppRoute />
+      </Suspense>
+    )
   }
 
   return (

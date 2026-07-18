@@ -17,10 +17,6 @@ import {
   findModelsWithCapabilities,
   findBestModel,
   modelHasCapabilities,
-  inferOllamaCapabilities,
-  inferOllamaCapabilitiesAsync,
-  getOllamaModelsWithCapabilities,
-  getOllamaModelsWithCapabilitiesAsync,
   inferLocalModelCapabilities,
   formatLocalModelName,
   usesLocalInference,
@@ -369,102 +365,6 @@ describe('Model capability definitions', () => {
         }
       }
     }
-  })
-})
-
-describe('inferOllamaCapabilities', () => {
-  it('should infer vision capability for llava models', () => {
-    const caps = inferOllamaCapabilities('llava:7b')
-    expect(caps.vision).toBe(true)
-  })
-
-  it('should infer thinking capability for deepseek-r1 models', () => {
-    const caps = inferOllamaCapabilities('deepseek-r1:8b')
-    expect(caps.thinking).toBe(true)
-    expect(caps.tools).toBe(true)
-  })
-
-  it('should infer tools capability for llama3.2 models', () => {
-    const caps = inferOllamaCapabilities('llama3.2:3b')
-    expect(caps.tools).toBe(true)
-    expect(caps.fast).toBe(true)
-  })
-
-  it('should infer vision and fast for gemma3 models', () => {
-    const caps = inferOllamaCapabilities('gemma3:4b')
-    expect(caps.vision).toBe(true)
-    expect(caps.fast).toBe(true)
-  })
-
-  it('should return empty capabilities for unknown models', () => {
-    const caps = inferOllamaCapabilities('unknown-model:1b')
-    expect(Object.keys(caps).length).toBe(0)
-  })
-
-  it('should be case-insensitive', () => {
-    const caps1 = inferOllamaCapabilities('LLaVA:7b')
-    const caps2 = inferOllamaCapabilities('llava:7b')
-    expect(caps1.vision).toBe(true)
-    expect(caps2.vision).toBe(true)
-  })
-})
-
-describe('inferOllamaCapabilitiesAsync', () => {
-  it('should return capabilities for known models', async () => {
-    const caps = await inferOllamaCapabilitiesAsync('llava:7b')
-    expect(caps.vision).toBe(true)
-  })
-
-  it('should fall back to pattern matching when models.dev fails', async () => {
-    const caps = await inferOllamaCapabilitiesAsync('deepseek-r1:14b')
-    expect(caps.thinking).toBe(true)
-    expect(caps.tools).toBe(true)
-  })
-
-  it('should handle unknown models gracefully', async () => {
-    const caps = await inferOllamaCapabilitiesAsync('unknown-model:1b')
-    expect(
-      Object.keys(caps).filter((k) => caps[k as keyof typeof caps]),
-    ).toHaveLength(0)
-  })
-})
-
-describe('getOllamaModelsWithCapabilities', () => {
-  it('should return models with inferred capabilities', () => {
-    const modelIds = ['llava:7b', 'deepseek-r1:8b', 'llama3.2:3b']
-    const models = getOllamaModelsWithCapabilities(modelIds)
-
-    expect(models).toHaveLength(3)
-    expect(models[0].id).toBe('llava:7b')
-    expect(models[0].capabilities?.vision).toBe(true)
-    expect(models[1].id).toBe('deepseek-r1:8b')
-    expect(models[1].capabilities?.thinking).toBe(true)
-    expect(models[2].id).toBe('llama3.2:3b')
-    expect(models[2].capabilities?.tools).toBe(true)
-  })
-
-  it('should generate human-readable names', () => {
-    const models = getOllamaModelsWithCapabilities(['llama3.2:3b'])
-    expect(models[0].name).toContain('Llama')
-    expect(models[0].name).toContain('3B')
-  })
-})
-
-describe('getOllamaModelsWithCapabilitiesAsync', () => {
-  it('should return models with inferred capabilities', async () => {
-    const modelIds = ['llava:7b', 'deepseek-r1:8b']
-    const models = await getOllamaModelsWithCapabilitiesAsync(modelIds)
-
-    expect(models).toHaveLength(2)
-    expect(models[0].id).toBe('llava:7b')
-    expect(models[0].capabilities?.vision).toBe(true)
-    expect(models[1].id).toBe('deepseek-r1:8b')
-    expect(models[1].capabilities?.thinking).toBe(true)
-  })
-
-  it('should handle empty array', async () => {
-    const models = await getOllamaModelsWithCapabilitiesAsync([])
-    expect(models).toHaveLength(0)
   })
 })
 

@@ -547,8 +547,8 @@ export function generateAppPageHtml(
         "react-dom": "https://esm.sh/preact@10/compat",
         "react-dom/client": "https://esm.sh/preact@10/compat/client?standalone",
         "react/jsx-runtime": "https://esm.sh/preact@10/jsx-runtime",
-        "framer-motion": "https://esm.sh/framer-motion?standalone&external=react,react-dom",
-        "@heroui/react": "https://esm.sh/@heroui/react@2.8.7?standalone&external=react,react-dom",
+        "framer-motion": "https://esm.sh/framer-motion@12.29.2?standalone&external=react,react-dom",
+        "@heroui/react": "https://esm.sh/@heroui/react@2.8.7?standalone&external=react,react-dom&deps=framer-motion@12.29.2,motion-dom@12.29.2",
         "@devs/components": "/extensions/components/index.js"
       }
     }

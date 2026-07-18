@@ -57,7 +57,6 @@ export function useAutoScroll(isActive: boolean, deps: unknown[] = []) {
         isAutoScrollingRef.current = false
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, ...deps])
 
   return { streamingEndRef }

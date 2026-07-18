@@ -1,7 +1,13 @@
-import { Chip } from '@heroui/react_3'
-import { Icon } from '@/components'
+import { useState } from 'react'
+import { Button, Chip, TextArea } from '@heroui/react_3'
+import { Icon, MarkdownRenderer } from '@/components'
 import { useI18n } from '@/i18n'
-import { useAgentMemories } from '@/stores/agentMemoryStore'
+import {
+  useAgentMemories,
+  useAgentMemoryDocument,
+} from '@/stores/agentMemoryStore'
+import { writeAgentMemory } from '@/lib/memory-learning-service'
+import { successToast, errorToast } from '@/lib/toast'
 import { SectionCard, SectionEmpty } from '../shared/SectionCard'
 
 interface MemorySectionProps {
@@ -42,27 +48,34 @@ function formatRelativeTime(date: Date | string): string {
 export function MemorySection({ agentId }: MemorySectionProps) {
   const { t } = useI18n()
   const memories = useAgentMemories(agentId)
+  const memoryDocument = useAgentMemoryDocument(agentId)
+  const memoryDoc = memoryDocument?.synthesis?.trim() || ''
 
   const visibleMemories = memories.filter(
     (m) =>
       m.validationStatus === 'approved' || m.validationStatus === 'auto_approved',
   )
 
+  const isEmpty = !memoryDoc && visibleMemories.length === 0
+
   return (
     <SectionCard
       icon="Brain"
       title={t('Memories') as string}
-      count={visibleMemories.length}
+      count={visibleMemories.length + (memoryDoc ? 1 : 0)}
       defaultExpanded={false}
     >
-      {visibleMemories.length === 0 ? (
-        <SectionEmpty
-          icon="Brain"
-          message={t('No memories yet — this agent will learn from conversations')}
+      <div className="flex flex-col gap-3">
+        {/* Editable long-term memory document (KISS memory) */}
+        <MemoryDocumentEditor
+          agentId={agentId}
+          doc={memoryDoc}
+          showEmptyState={isEmpty}
         />
-      ) : (
-        <div className="flex flex-col gap-2">
-          {visibleMemories.slice(0, 10).map((memory) => (
+
+        {visibleMemories.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {visibleMemories.slice(0, 10).map((memory) => (
             <div
               key={memory.id}
               className="flex flex-col gap-1.5 rounded-lg px-2 py-2 transition-colors hover:bg-default-100"
@@ -102,8 +115,124 @@ export function MemorySection({ agentId }: MemorySectionProps) {
               +{visibleMemories.length - 10} more memories
             </p>
           )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </SectionCard>
+  )
+}
+
+/**
+ * Inline editor for an agent's long-term memory document. Shows the markdown
+ * with an edit affordance; editing swaps in a HeroUI v3 TextArea with
+ * Save / Cancel. Saving writes straight to the memory document.
+ */
+function MemoryDocumentEditor({
+  agentId,
+  doc,
+  showEmptyState,
+}: {
+  agentId: string
+  doc: string
+  showEmptyState: boolean
+}) {
+  const { t } = useI18n()
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState(doc)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const startEditing = () => {
+    setDraft(doc)
+    setIsEditing(true)
+  }
+
+  const save = async () => {
+    setIsSaving(true)
+    try {
+      await writeAgentMemory(agentId, draft)
+      successToast(t('Memory updated'))
+      setIsEditing(false)
+    } catch (error) {
+      errorToast(t('Failed to update memory'), error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col gap-2">
+        <TextArea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          rows={8}
+          autoFocus
+          placeholder={t(
+            'Write what this agent should remember, as short notes…',
+          )}
+          className="w-full rounded-lg border border-default-200 bg-default-50 p-2 font-mono text-xs"
+        />
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onPress={() => setIsEditing(false)}
+            isDisabled={isSaving}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            size="sm"
+            variant="primary"
+            onPress={save}
+            isPending={isSaving}
+          >
+            {t('Save')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!doc) {
+    return (
+      <div className="flex flex-col gap-2">
+        {showEmptyState && (
+          <SectionEmpty
+            icon="Brain"
+            message={t(
+              'No memories yet — this agent will learn from conversations',
+            )}
+          />
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="self-start"
+          onPress={startEditing}
+        >
+          <Icon name="Plus" size="sm" />
+          {t('Add a note')}
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="group/mem relative">
+      <div className="text-foreground text-xs leading-relaxed opacity-80">
+        <MarkdownRenderer content={doc} />
+      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        isIconOnly
+        aria-label={t('Edit memory')}
+        className="absolute right-0 top-0 opacity-0 transition-opacity group-hover/mem:opacity-100"
+        onPress={startEditing}
+      >
+        <Icon name="EditPencil" size="sm" />
+      </Button>
+    </div>
   )
 }

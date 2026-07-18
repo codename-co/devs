@@ -268,7 +268,6 @@ describe('Content Encryption', () => {
       expect(decrypted.id).toBe('item-3')
       expect(decrypted.path).toBe('/emails/inbox')
       // _encrypted flag should be removed after decryption
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((decrypted as any)._encrypted).toBeUndefined()
     })
 

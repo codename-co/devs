@@ -42,6 +42,7 @@ Additional deep-dives in `docs/more/`:
 | [docs/more/LOCAL-BACKUP.md](docs/more/LOCAL-BACKUP.md) | Bidirectional file system sync |
 | [docs/more/EXTENSION-BRIDGE.md](docs/more/EXTENSION-BRIDGE.md) | Sandboxed extension API |
 | [docs/more/MEET-BOT.md](docs/more/MEET-BOT.md) | Google Meet integration |
+| [docs/more/MEMORY.md](docs/more/MEMORY.md) | Agent long-term memory (KISS, agent-directed) |
 | [docs/more/SEARCH.md](docs/more/SEARCH.md) | Global search |
 
 ---

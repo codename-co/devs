@@ -86,6 +86,7 @@ export const en = [
   'Only show your custom agents in the agent picker and agents page',
   'Auto Memory Learning',
   'Automatically extract learnable information from conversations to build agent memory',
+  'Quietly remember durable facts from your conversations in the background, so agents stay personalised over time. Runs invisibly and never appears in replies.',
   'Quick Reply Suggestions',
   'Show AI-generated follow-up suggestions after each assistant response',
   'Web Search Grounding',

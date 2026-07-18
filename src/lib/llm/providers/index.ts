@@ -1,16 +1,6 @@
-// Export provider classes without registering them
-export { OpenAIProvider } from './openai'
-export { AnthropicProvider } from './anthropic'
-export { CustomProvider } from './custom'
-export { GoogleProvider } from './google'
-export { HuggingFaceProvider } from './huggingface'
+// Only irreducibly-special providers keep a bespoke implementation; every
+// standard provider is backed by the AI SDK (see `../ai-sdk`).
 export { LocalLLMProvider } from './local'
-export { MistralProvider } from './mistral'
-export { OllamaProvider } from './ollama'
-export { LMStudioProvider } from './lm-studio'
-export { OpenAICompatibleProvider } from './openai-compatible'
-export { OpenRouterProvider } from './openrouter'
 export { VertexAIProvider } from './vertex-ai'
 export { ClaudeCodeProvider } from './claude-code'
-export { ChatJimmyProvider } from './chatjimmy'
 export { GitHubCopilotProvider } from './github-copilot'

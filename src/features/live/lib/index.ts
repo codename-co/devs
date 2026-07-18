@@ -10,9 +10,6 @@ export * from './types'
 // STT Providers
 export {
   WebSpeechSTTProvider,
-  MoonshineSTTProvider,
-  WhisperSTTProvider,
-  GraniteSTTProvider,
   createSTTProvider,
   getAvailableSTTProviders,
 } from './stt'
@@ -20,7 +17,6 @@ export {
 // TTS Providers
 export {
   WebSpeechTTSProvider,
-  KokoroTTSProvider,
   KOKORO_VOICES,
   createTTSProvider,
   getAvailableTTSProviders,

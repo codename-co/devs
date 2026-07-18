@@ -44,4 +44,10 @@ export {
   registerArtifactTools,
   areArtifactToolsRegistered,
   unregisterArtifactTools,
+  registerOrchestrationTools,
+  areOrchestrationToolsRegistered,
+  unregisterOrchestrationTools,
+  registerMemoryTools,
+  areMemoryToolsRegistered,
+  unregisterMemoryTools,
 } from './executor'

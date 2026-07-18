@@ -111,6 +111,7 @@ export const ar: I18n = {
   'Auto Memory Learning': 'التعلم الآلي للذاكرة',
   'Automatically extract learnable information from conversations to build agent memory':
     'استخراج المعلومات القابلة للتعلم تلقائياً من المحادثات لبناء ذاكرة الوكيل',
+  'Quietly remember durable facts from your conversations in the background, so agents stay personalised over time. Runs invisibly and never appears in replies.': 'يتذكر بهدوء الحقائق الدائمة من محادثاتك في الخلفية، حتى يبقى الوكلاء مخصّصين بمرور الوقت. يعمل بشكل غير مرئي ولا يظهر أبدًا في الردود.',
   'Quick Reply Suggestions': 'اقتراحات الرد السريع',
   'Show AI-generated follow-up suggestions after each assistant response':
     'عرض اقتراحات المتابعة المولّدة بالذكاء الاصطناعي بعد كل استجابة للمساعد',

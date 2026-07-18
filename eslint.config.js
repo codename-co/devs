@@ -5,9 +5,20 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
 import connectorSecurity from './eslint-rules/connector-security.js'
+import coreBoundary from './eslint-rules/core-boundary.js'
 
 export default [
-  { ignores: ['dist', 'coverage', 'playwright-report', 'test-results'] },
+  {
+    ignores: [
+      'dist',
+      'coverage',
+      'playwright-report',
+      'test-results',
+      // Generated bundle (outDir of vite.extension-components.config.ts) —
+      // a build artifact, never hand-edited; linting it is meaningless.
+      'public/extensions/components',
+    ],
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -48,6 +59,17 @@ export default [
       'react-hooks/exhaustive-deps': 'off', // Too many false positives with intentional exclusions
       'react-hooks/rules-of-hooks': 'off', // Has false positives in this codebase
       'react-refresh/only-export-components': 'off', // Not critical for this project
+      // Preserve intentional typographic whitespace (e.g. French narrow
+      // no-break spaces) inside i18n template literals/strings/JSX text.
+      'no-irregular-whitespace': [
+        'error',
+        {
+          skipStrings: true,
+          skipTemplates: true,
+          skipComments: true,
+          skipJSXText: true,
+        },
+      ],
     },
   },
   // Connector security rules — scoped to connector feature files only
@@ -59,6 +81,35 @@ export default [
     rules: {
       'connector-security/no-sensitive-logging': 'warn',
       'connector-security/require-error-sanitization': 'warn',
+    },
+  },
+  // Core/optional + facade boundary rules (re-platform, REPORT §2.2/§3.2).
+  // Scoped to src/** (the core PWA); ee/ lives outside this tree entirely.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: {
+      'core-boundary': coreBoundary,
+    },
+    rules: {
+      'core-boundary/no-enterprise-in-core': 'error',
+      'core-boundary/no-facade-bypass': [
+        'error',
+        {
+          facades: [
+            {
+              forbidden: '@/lib/llm/providers',
+              via: 'the LLMService facade (@/lib/llm)',
+              ownerDir: 'src/lib/llm',
+            },
+          ],
+          // Grandfathered facade-bypass debt — burn down, never grow.
+          // Tracked in docs/revamp/BOUNDARIES.md.
+          allow: [
+            'src/components/PromptArea/ModelSelector.tsx',
+            'src/components/LocalLLMLoadingIndicator.tsx',
+          ],
+        },
+      ],
     },
   },
 ]

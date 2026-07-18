@@ -13,6 +13,7 @@ import {
   messageStepsToConversationSteps,
 } from '@/pages/Agents/ConversationStepTracker'
 import { MessageContent } from './MessageContent'
+import { RememberSelectionMenu } from './RememberSelectionMenu'
 
 // ============================================================================
 // MessageBubble — shared chat message display for agents & tasks pages
@@ -151,11 +152,13 @@ export const MessageBubble = memo(
 
           {/* Content */}
           {message.content ? (
-            <MessageContent
-              content={message.content}
-              traceIds={message.traceIds || []}
-              isStreaming={isStreaming}
-            />
+            <RememberSelectionMenu agentId={agent?.id}>
+              <MessageContent
+                content={message.content}
+                traceIds={message.traceIds || []}
+                isStreaming={isStreaming}
+              />
+            </RememberSelectionMenu>
           ) : isStreaming && steps.length === 0 ? (
             <div className="flex items-center gap-1 py-1">
               <Spinner size="sm" classNames={{ wrapper: 'w-3 h-3' }} />

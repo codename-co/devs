@@ -115,6 +115,7 @@ export const fr: I18n = {
   'Auto Memory Learning': 'Apprentissage automatique de la mémoire',
   'Automatically extract learnable information from conversations to build agent memory':
     'Extraire automatiquement les informations exploitables des conversations pour construire la mémoire des agents',
+  'Quietly remember durable facts from your conversations in the background, so agents stay personalised over time. Runs invisibly and never appears in replies.': 'Retient discrètement les faits durables de vos conversations en arrière-plan, pour que les agents restent personnalisés dans le temps. S\'exécute de façon invisible et n\'apparaît jamais dans les réponses.',
   'Quick Reply Suggestions': 'Suggestions de réponse rapide',
   'Show AI-generated follow-up suggestions after each assistant response':
     'Afficher des suggestions de suivi générées par l’IA après chaque réponse de l’assistant',

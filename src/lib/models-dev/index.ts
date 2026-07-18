@@ -57,6 +57,15 @@ export interface ProviderSummary {
 // =============================================================================
 
 /**
+ * Returns true when an IndexedDB implementation is available in the current
+ * runtime. It is absent in non-browser environments (e.g. Node/test runners),
+ * where caching is simply skipped rather than treated as an error.
+ */
+function isIndexedDBAvailable(): boolean {
+  return typeof indexedDB !== 'undefined'
+}
+
+/**
  * Opens the IndexedDB database for caching.
  * Creates the object store if it doesn't exist.
  */
@@ -89,6 +98,7 @@ function openCacheDB(): Promise<IDBDatabase> {
  * Gets a cached entry from IndexedDB.
  */
 async function getCachedEntry(): Promise<CacheEntry | null> {
+  if (!isIndexedDBAvailable()) return null
   try {
     const db = await openCacheDB()
     return new Promise((resolve) => {
@@ -119,6 +129,7 @@ async function getCachedEntry(): Promise<CacheEntry | null> {
  * Stores a cache entry in IndexedDB.
  */
 async function setCachedEntry(entry: CacheEntry): Promise<void> {
+  if (!isIndexedDBAvailable()) return
   try {
     const db = await openCacheDB()
     return new Promise((resolve, reject) => {

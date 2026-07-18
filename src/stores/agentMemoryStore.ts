@@ -93,6 +93,27 @@ export async function getMemoriesByAgentIdDecrypted(
   )
 }
 
+/**
+ * Get all global memories (shared across agents) with content decrypted.
+ * Used to migrate legacy `isGlobal` entries into the global memory document.
+ */
+export async function getGlobalMemoriesDecrypted(): Promise<
+  AgentMemoryEntry[]
+> {
+  const now = new Date()
+  const raw = Array.from(memories.values()).filter(
+    (m) => m.isGlobal === true && (!m.expiresAt || new Date(m.expiresAt) > now),
+  )
+  return Promise.all(
+    raw.map(
+      (m) =>
+        decryptFields(m, [
+          ...MEMORY_ENCRYPTED_FIELDS,
+        ]) as Promise<AgentMemoryEntry>,
+    ),
+  )
+}
+
 // =========================================================================
 // React Hook for reactive memory access
 // =========================================================================
@@ -117,6 +138,19 @@ export function useAgentMemories(agentId: string): AgentMemoryEntry[] {
     (m) =>
       m.agentId === agentId && (!m.expiresAt || new Date(m.expiresAt) > now),
   )
+}
+
+/**
+ * React hook to reactively read an agent's memory document (the KISS memory
+ * document — see docs/more/MEMORY.md). Re-renders whenever the document
+ * changes, including background writes from auto-capture or the `remember` tool.
+ */
+export function useAgentMemoryDocument(
+  agentId?: string,
+): AgentMemoryDocument | undefined {
+  const allDocs = useLiveMap(agentMemoryDocuments)
+  if (!agentId) return undefined
+  return allDocs.find((d) => d.agentId === agentId)
 }
 
 // =========================================================================

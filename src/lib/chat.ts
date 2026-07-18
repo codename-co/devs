@@ -6,7 +6,6 @@ import { getDefaultAgent } from '@/stores/agentStore'
 import { buildPinnedContextForChat } from '@/stores/pinnedMessageStore'
 import { TraceService } from '@/features/traces/trace-service'
 import { ModelInfo } from '@/features/traces/types'
-import { WorkflowOrchestrator } from '@/lib/orchestrator'
 import { Agent, Message, MessageStep } from '@/types'
 import { notifyError } from '@/features/notifications'
 import type { IconName } from '@/lib/types'
@@ -53,7 +52,7 @@ import {
 } from '@/lib/agent-knowledge'
 import {
   buildMemoryContextForChat,
-  learnFromMessage,
+  autoCaptureToMemory,
 } from '@/lib/memory-learning-service'
 import { getEffectiveSettings } from '@/stores/userStore'
 import { Lang, languages } from '@/i18n'
@@ -73,23 +72,37 @@ import {
   areResearchToolsRegistered,
   registerSkillTools,
   areSkillToolsRegistered,
+  registerOrchestrationTools,
+  areOrchestrationToolsRegistered,
+  registerMemoryTools,
+  areMemoryToolsRegistered,
 } from '@/lib/tool-executor'
-import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
-import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
-import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
+import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools/types'
+import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools/types'
+import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools/types'
 // import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
-import { PPTX_TOOL_DEFINITIONS } from '@/lib/pptx-tools'
+import { PPTX_TOOL_DEFINITIONS } from '@/lib/pptx-tools/types'
+// Import tool DEFINITIONS from their source modules (not the `@/tools/plugins`
+// barrel) so the heavy plugin handlers (WASM sandbox, pptx, connectors) stay
+// out of the boot graph (REPORT §4 Phase 1).
 import {
   WIKIPEDIA_SEARCH_TOOL_DEFINITION,
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+} from '@/tools/plugins/wikipedia'
+import {
   WIKIDATA_SEARCH_TOOL_DEFINITION,
   WIKIDATA_ENTITY_TOOL_DEFINITION,
   WIKIDATA_SPARQL_TOOL_DEFINITION,
+} from '@/tools/plugins/wikidata'
+import {
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
-  SKILL_TOOL_DEFINITIONS,
-} from '@/tools/plugins'
-import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
+} from '@/tools/plugins/arxiv'
+import { SKILL_TOOL_DEFINITIONS } from '@/tools/plugins/skill-tools'
+import { DELEGATE_TOOL_DEFINITION } from '@/tools/plugins/delegate'
+import { listDelegatableAgents } from '@/lib/subagent'
+// Connector tool definitions live in the large `@/features/connectors/tools`
+// module; import lazily so it stays out of the boot graph (REPORT §4 Phase 1).
 import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import type { Connector } from '@/features/connectors/types'
 import { getEnabledSkills } from '@/stores/skillStore'
@@ -243,7 +256,36 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
     tools.push(...Object.values(SKILL_TOOL_DEFINITIONS))
   }
 
+  // The DEVS meta agent gets the `delegate` tool so it can orchestrate
+  // specialist sub-agents (REPORT §2.3 "sub-agents via the simple
+  // orchestrator"). Only the meta agent gets it: specialist sub-agents run
+  // through `runAgent`, whose tool set excludes `delegate`, so delegation
+  // never recurses. Enrich the description with the specialists on hand.
+  if (_agent.id === 'devs') {
+    tools.push(withDelegatableAgents(DELEGATE_TOOL_DEFINITION))
+  }
+
   return tools
+}
+
+/**
+ * Clone the `delegate` tool definition and append the list of currently
+ * available specialist agents to its `agent` parameter description, so the meta
+ * agent knows who it can delegate to by slug.
+ */
+function withDelegatableAgents(def: ToolDefinition): ToolDefinition {
+  const roster = listDelegatableAgents()
+  if (roster.length === 0) return def
+
+  const cloned: ToolDefinition = JSON.parse(JSON.stringify(def))
+  const agentParam = cloned.function.parameters?.properties?.agent
+  if (agentParam) {
+    const list = roster
+      .map((a) => `"${a.slug}" (${a.role})`)
+      .join(', ')
+    agentParam.description = `${agentParam.description} Available specialist agents: ${list}.`
+  }
+  return cloned
 }
 
 /**
@@ -284,6 +326,9 @@ async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
     console.log('▶ active providers:', activeProviders)
 
     // Get tools for each active provider, enhancing with connector IDs
+    const { getToolDefinitionsForProvider } = await import(
+      '@/features/connectors/tools'
+    )
     const tools: ToolDefinition[] = []
     for (const provider of activeProviders) {
       const providerConnectors = connectorsByProvider.get(provider) || []
@@ -480,6 +525,16 @@ async function executeToolCalls(
     registerSkillTools()
   }
 
+  // Ensure orchestration tools (the `delegate` sub-agent tool) are registered
+  if (!areOrchestrationToolsRegistered()) {
+    registerOrchestrationTools()
+  }
+
+  // Ensure memory tools (the `remember` tool) are registered
+  if (!areMemoryToolsRegistered()) {
+    registerMemoryTools()
+  }
+
   // Create a trace for the tool execution batch
   const trace = TraceService.startTrace({
     name: `Tools: ${toolCalls.map((tc) => tc.function.name).join(', ')}`,
@@ -629,146 +684,12 @@ export const submitChat = async (
       return { success: false, error: 'No agent selected' }
     }
 
-    // Check if this is the DEVS orchestrator agent - trigger autonomous orchestration
-    if (agent.id === 'devs') {
-      try {
-        // First, save the user prompt to conversation before orchestration
-        const { currentConversation, createConversation, addMessage } =
-          useConversationStore.getState()
-
-        let conversation = currentConversation
-        if (
-          !conversation ||
-          (selectedAgent && conversation.agentId !== selectedAgent.id)
-        ) {
-          conversation = await createConversation(agent.id, 'orchestration')
-          onConversationCreated?.(conversation.id)
-        }
-
-        // Save user message to conversation
-        await addMessage(conversation.id, { role: 'user', content: prompt })
-
-        onResponseUpdate({
-          type: 'status',
-          status: {
-            icon: 'Rocket',
-            i18nKey: 'Starting autonomous task orchestration…',
-          },
-        })
-
-        const orchestrationSteps: MessageStep[] = [
-          {
-            id: `step-orch-${Date.now()}`,
-            icon: 'Rocket',
-            i18nKey: 'Starting autonomous task orchestration…',
-            status: 'running',
-            startedAt: Date.now(),
-          },
-        ]
-
-        // Build context-enriched prompt for follow-up messages so the
-        // orchestrator understands conversation history.
-        const orchestrationPrompt = buildOrchestrationPrompt(
-          prompt,
-          conversationMessages,
-          includeHistory,
-        )
-
-        const result = await WorkflowOrchestrator.orchestrateTask(
-          orchestrationPrompt,
-          undefined,
-          {
-            activatedSkills,
-            signal,
-          },
-        )
-
-        // Build the response from the orchestration result
-        const orchestrationResponse =
-          result.synthesizedResponse ||
-          [
-            `# Task Orchestration Complete\n`,
-            `✅ **Status**: ${result.success ? 'Success' : 'Failed'}`,
-            result.artifacts.length > 0
-              ? [
-                  `## Generated Artifacts\n`,
-                  ...result.artifacts.map(
-                    (artifact) =>
-                      `### ${artifact.title}\n**Type**: ${artifact.type} | **Status**: ${artifact.status}\n**Description**: ${artifact.description}\n\n\`\`\`${artifact.format}\n${artifact.content}\n\`\`\``,
-                  ),
-                ].join('\n')
-              : '',
-            result.errors?.length
-              ? [
-                  `## Issues Encountered\n`,
-                  ...result.errors.map((error) => `⚠️ ${error}`),
-                ].join('\n')
-              : '',
-          ]
-            .filter(Boolean)
-            .join('\n')
-
-        onResponseUpdate({ type: 'content', content: orchestrationResponse })
-
-        // Finalize orchestration step
-        orchestrationSteps[0].status = 'completed'
-        orchestrationSteps[0].completedAt = Date.now()
-
-        // NOTE: We intentionally do NOT overwrite the orchestration conversation's
-        // workflowId with the real workflow UUID. Sub-task conversations already carry
-        // the real workflowId; promoting this top-level conversation would cause the
-        // TaskPage (which queries by workflowId) to show duplicate user/assistant
-        // messages from both the orchestration conversation and the sub-task
-        // conversations.
-
-        // Save the orchestration response as assistant message
-        await addMessage(conversation.id, {
-          role: 'assistant',
-          content: orchestrationResponse,
-          agentId: agent.id,
-          steps: orchestrationSteps,
-        })
-
-        // Clear the prompt after successful orchestration
-        onPromptClear()
-
-        return { success: result.success }
-      } catch (error) {
-        console.error('Orchestration failed:', error)
-        const errorDetails =
-          error instanceof Error
-            ? error.message
-            : 'Unknown error occurred during task orchestration.'
-        onResponseUpdate({
-          type: 'status',
-          status: {
-            icon: 'WarningCircle',
-            i18nKey: 'Orchestration failed: {error}',
-            vars: { error: errorDetails },
-          },
-        })
-
-        // Save error message to conversation if conversation exists
-        try {
-          const { currentConversation, addMessage } =
-            useConversationStore.getState()
-          if (currentConversation) {
-            await addMessage(currentConversation.id, {
-              role: 'assistant',
-              content: `**Orchestration Failed**\n\n${errorDetails}`,
-              agentId: agent.id,
-            })
-          }
-        } catch (saveError) {
-          console.warn(
-            'Failed to save error message to conversation:',
-            saveError,
-          )
-        }
-
-        return { success: false, error: 'Orchestration failed' }
-      }
-    }
+    // NOTE: The DEVS agent used to fork here into the heavy
+    // `WorkflowOrchestrator.orchestrateTask` pipeline (task-analyzer →
+    // decomposer → team-coordinator → synthesis). Per REPORT §1.3 / Phase 2
+    // ("collapse the orchestrator to KISS"), the default DEVS agent now runs
+    // the same lean single-agent ReAct tool loop as every other agent (below).
+    // No special-casing: one code path, tools available, streaming preserved.
 
     const { currentConversation, createConversation, addMessage } =
       useConversationStore.getState()
@@ -1190,11 +1111,16 @@ ${connectorBlocks}`
       // Emit tool results so the streaming UI can display them
       onResponseUpdate({ type: 'tool_results', toolCalls: stepToolCalls })
 
-      // Add assistant message with tool calls to the conversation
-      // Note: We need to format this as the LLM expects for tool results
+      // Add assistant message with tool calls to the conversation.
+      // Note: We flatten tool calls into a follow-up user message below. The
+      // assistant text must be non-empty — some providers (e.g. Anthropic)
+      // reject empty text content blocks — so when the model returned only a
+      // tool call with no preamble, substitute a short description.
       workingMessages.push({
         role: 'assistant',
-        content: finalContent || '',
+        content:
+          finalContent ||
+          `(Calling ${toolCalls.map((tc) => tc.function.name).join(', ')}…)`,
       })
 
       // Add tool results as user message (this is a simplification -
@@ -1296,21 +1222,24 @@ ${connectorBlocks}`
       onResponseClear()
     }
 
-    // Trigger automatic memory learning if enabled in settings
-    // This runs asynchronously in the background and doesn't block the chat
+    // Opt-in auto-capture: after each turn, make ONE background LLM call to
+    // append any new durable facts to the agent's memory document. Cheap,
+    // document-based replacement for the legacy extraction/review pipeline
+    // (see docs/more/MEMORY.md). Runs async and never blocks the chat.
     const autoMemoryLearning = getEffectiveSettings().autoMemoryLearning
-    if (autoMemoryLearning && finalContent) {
-      // Learn from the user's prompt and the assistant's response
-      learnFromMessage(prompt, finalContent, agent.id, conversation.id, lang)
-        .then((events) => {
-          if (events.length > 0) {
+    // Default ON: memory learning happens transparently in the background.
+    // Only skip when the user has explicitly turned it off.
+    if (autoMemoryLearning !== false && finalContent) {
+      autoCaptureToMemory(prompt, finalContent, agent.id, lang)
+        .then((notes) => {
+          if (notes.length > 0) {
             console.log(
-              `📚 Auto-learned ${events.length} item(s) from conversation`,
+              `📚 Auto-captured ${notes.length} note(s) into memory`,
             )
           }
         })
         .catch((err) => {
-          console.warn('Memory learning failed (non-critical):', err)
+          console.warn('Memory auto-capture failed (non-critical):', err)
         })
     }
 

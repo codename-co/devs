@@ -67,7 +67,7 @@ export function ProviderForm({ provider }: ProviderFormProps) {
     setIsValidating(true)
     try {
       const keyToEncrypt =
-        apiKey ||
+        apiKey.trim() ||
         (providerConfig.noApiKey || providerConfig.optionalApiKey
           ? `${provider}-no-key`
           : '')

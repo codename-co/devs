@@ -53,7 +53,15 @@ vi.mock('@/lib/task-analyzer', () => ({
   },
 }))
 
+vi.mock('@/lib/hitl', () => ({
+  requestHumanInput: vi.fn().mockResolvedValue({
+    status: 'auto-resolved',
+    value: 'proceed',
+  }),
+}))
+
 vi.mock('@/stores/taskStore', () => ({
+  claimTask: vi.fn(),
   useTaskStore: {
     getState: vi.fn().mockReturnValue({
       createTask: vi.fn().mockResolvedValue({

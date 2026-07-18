@@ -1177,3 +1177,59 @@ export function areArtifactToolsRegistered(): boolean {
 export function unregisterArtifactTools(): void {
   unregisterCategoryFromLegacy('artifact', defaultRegistry)
 }
+
+// ============================================================================
+// Orchestration Tools Registration (meta-agent delegation)
+// ============================================================================
+
+/**
+ * Register orchestration tools (the `delegate` sub-agent tool) with the default
+ * registry. Enables the DEVS meta agent to delegate subtasks to specialists.
+ */
+export function registerOrchestrationTools(): void {
+  registerCategoryWithLegacy('orchestration', defaultRegistry)
+}
+
+// ============================================================================
+// Memory Tools Registration (agent long-term memory)
+// ============================================================================
+
+/**
+ * Register memory tools (the `remember` tool) with the default registry.
+ * Enables every agent to persist long-term memory across conversations.
+ */
+export function registerMemoryTools(): void {
+  registerCategoryWithLegacy('memory', defaultRegistry)
+}
+
+/**
+ * Check if memory tools are registered.
+ *
+ * @returns true if all memory tools are registered
+ */
+export function areMemoryToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('memory', defaultRegistry)
+}
+
+/**
+ * Unregister all memory tools from the default registry.
+ */
+export function unregisterMemoryTools(): void {
+  unregisterCategoryFromLegacy('memory', defaultRegistry)
+}
+
+/**
+ * Check if orchestration tools are registered.
+ *
+ * @returns true if all orchestration tools are registered
+ */
+export function areOrchestrationToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('orchestration', defaultRegistry)
+}
+
+/**
+ * Unregister all orchestration tools from the default registry.
+ */
+export function unregisterOrchestrationTools(): void {
+  unregisterCategoryFromLegacy('orchestration', defaultRegistry)
+}

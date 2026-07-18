@@ -111,6 +111,7 @@ export const ko: I18n = {
   'Auto Memory Learning': '자동 메모리 학습',
   'Automatically extract learnable information from conversations to build agent memory':
     '대화에서 학습 가능한 정보를 자동으로 추출하여 에이전트 메모리 구축',
+  'Quietly remember durable facts from your conversations in the background, so agents stay personalised over time. Runs invisibly and never appears in replies.': '대화에서 지속적인 사실을 백그라운드에서 조용히 기억하여 에이전트가 시간이 지나도 개인화된 상태를 유지합니다. 보이지 않게 실행되며 답변에 절대 나타나지 않습니다.',
   'Quick Reply Suggestions': '빠른 답변 제안',
   'Show AI-generated follow-up suggestions after each assistant response':
     '각 어시스턴트 응답 후 AI가 생성한 후속 제안 표시',

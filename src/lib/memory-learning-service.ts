@@ -13,6 +13,8 @@ import { CredentialService } from '@/lib/credential-service'
 import {
   useAgentMemoryStore,
   getMemoriesByAgentId,
+  getMemoriesByAgentIdDecrypted,
+  getGlobalMemoriesDecrypted,
 } from '@/stores/agentMemoryStore'
 import { useConversationStore } from '@/stores/conversationStore'
 import { Lang, languages } from '@/i18n'
@@ -149,9 +151,48 @@ Write in clear, concise language. Use bullet points for readability.
 Focus on actionable information that would help improve future interactions.
 `
 
+const MEMORY_COMPACTION_SYSTEM_PROMPT = /* md */ `You are a memory editor. You are given an agent's long-term memory document (markdown) about a user. Rewrite it to be a clean, compact, deduplicated set of durable notes.
+
+Rules:
+- Merge duplicates and near-duplicates into a single note.
+- Remove one-off/transient details, resolved tasks, and anything not durably useful.
+- Keep durable facts about the user, their preferences, ongoing goals/projects, key relationships, and corrections.
+- Prefer short bullet points grouped under a few simple headings.
+- Do NOT invent information. Only reorganise and condense what is present.
+- Keep the user's language.
+- Return ONLY the cleaned markdown document, with no preamble, explanation, or code fences.
+`
+
+const AUTO_CAPTURE_SYSTEM_PROMPT = /* md */ `You maintain an AI agent's long-term memory about a user. Given the agent's CURRENT MEMORY and the LATEST EXCHANGE, decide whether the user revealed something durable and worth remembering for future conversations.
+
+Extract ONLY new, durable information that is NOT already in CURRENT MEMORY:
+- the user's name, role, company, location (about themselves)
+- stable preferences (communication style, tools, ways of working)
+- ongoing goals or projects
+- key relationships (team, clients) with context
+- corrections to something previously remembered
+
+Do NOT extract:
+- one-off or transient requests
+- anything already present in CURRENT MEMORY
+- information the assistant provided (only what the USER shared)
+- generic facts that don't characterise this user
+
+Output format:
+- If there is nothing new and durable, output exactly: NONE
+- Otherwise output one short markdown bullet per new fact ("- ..."), and nothing else. No preamble, no code fences.
+`
+
 // ============================================================================
 // Memory Learning Service
 // ============================================================================
+
+/**
+ * Reserved key in the `agentMemoryDocuments` map for the global memory document
+ * — shared across all agents and injected into every conversation. The
+ * double-underscore prefix avoids collision with real agent ids.
+ */
+export const GLOBAL_MEMORY_AGENT_ID = '__global__'
 
 export class MemoryLearningService {
   /**
@@ -733,56 +774,313 @@ export class MemoryLearningService {
   }
 
   /**
-   * Build context injection string from relevant memories
-   * This is used to inject memories into chat context
+   * Build context injection string from memory documents.
+   *
+   * Injects TWO documents: the global memory (shared across all agents) and the
+   * agent-specific memory. Both are small, curated markdown docs injected whole
+   * at the start of every conversation (see docs/more/MEMORY.md).
+   *
+   * The second argument (previously the user prompt, used for relevance scoring)
+   * is kept for backward compatibility with existing callers but is ignored.
    */
   static async buildMemoryContextForChat(
     agentId: string,
-    userPrompt: string,
+    _userPrompt?: string,
   ): Promise<string> {
-    const { getRelevantMemoriesAsync, recordMemoryUsage } =
-      useAgentMemoryStore.getState()
+    const [globalMem, agentMem] = await Promise.all([
+      this.readAgentMemory(GLOBAL_MEMORY_AGENT_ID),
+      agentId === GLOBAL_MEMORY_AGENT_ID
+        ? Promise.resolve('')
+        : this.readAgentMemory(agentId),
+    ])
 
-    // Extract keywords from user prompt (simple tokenization)
-    const keywords = userPrompt
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((word) => word.length > 3)
-      .slice(0, 10)
-
-    // Get relevant memories (async to ensure loading from IndexedDB)
-    const relevantMemories = await getRelevantMemoriesAsync(
-      agentId,
-      keywords,
-      [],
-      10,
-    )
-
-    if (relevantMemories.length === 0) {
-      return ''
+    const sections: string[] = []
+    if (globalMem.trim()) {
+      sections.push(`### Shared (applies to all agents)\n\n${globalMem.trim()}`)
     }
-
-    // Record usage for analytics
-    for (const memory of relevantMemories) {
-      await recordMemoryUsage(memory.id)
+    if (agentMem.trim()) {
+      sections.push(`### Your own notes\n\n${agentMem.trim()}`)
     }
+    if (sections.length === 0) return ''
 
-    // Build context string
-    const memoryContext = relevantMemories
-      .map((m) => `• ${m.title}: ${m.content}`)
-      .join('\n')
+    return /* md */ `## What you remember about the user
 
-    return /* md */ `## Remembered Context about the User
+The following notes were saved from previous conversations. Treat them as
+background knowledge and use them to stay consistent and personalised. If the
+user contradicts or updates something here, prefer the newer information. Do not
+mention these notes or that you are "remembering" — just use them naturally.
 
-The following information was learned from previous conversations and may be relevant:
-
-${memoryContext}
-
-Use this context to provide more personalized and contextually relevant responses. When using this information, cite it as [Memory].
+${sections.join('\n\n')}
 
 ---
 
 `
+  }
+
+  // ==========================================================================
+  // Memory Document (agent-directed, KISS)
+  // ==========================================================================
+
+  /** Reserved key for the global (all-agents) memory document. */
+  static readonly GLOBAL_MEMORY_AGENT_ID = GLOBAL_MEMORY_AGENT_ID
+
+  /** Soft cap on the memory document size, in characters (~a few hundred tokens). */
+  static readonly MAX_MEMORY_CHARS = 4000
+
+  /**
+   * Read the agent's memory document (markdown).
+   *
+   * Lazily migrates legacy per-entry memories: if the document is empty but the
+   * agent has approved/auto-approved memories from the old pipeline, they are
+   * flattened into the document once so existing users keep their memory.
+   */
+  static async readAgentMemory(agentId: string): Promise<string> {
+    const { loadMemoryDocument } = useAgentMemoryStore.getState()
+    const doc = await loadMemoryDocument(agentId)
+    const synthesis = doc?.synthesis?.trim() || ''
+    if (synthesis) return synthesis
+
+    // Lazy migration from legacy memories
+    const flattened = await this.flattenLegacyMemories(agentId)
+    if (flattened) {
+      await this.writeAgentMemory(agentId, flattened)
+      return flattened
+    }
+    return ''
+  }
+
+  /** Overwrite the agent's memory document. */
+  static async writeAgentMemory(
+    agentId: string,
+    content: string,
+  ): Promise<void> {
+    const { createOrUpdateMemoryDocument } = useAgentMemoryStore.getState()
+    await createOrUpdateMemoryDocument(agentId, {
+      synthesis: content.trim(),
+      lastSynthesisAt: new Date(),
+    })
+  }
+
+  /**
+   * Apply an agent-directed memory operation used by the `remember` tool.
+   * Returns a short human-readable status for the LLM.
+   */
+  static async applyMemoryOperation(
+    agentId: string,
+    action: 'view' | 'append' | 'replace' | 'delete',
+    args: { content?: string; find?: string },
+  ): Promise<string> {
+    const current = await this.readAgentMemory(agentId)
+
+    if (action === 'view') {
+      return current || '(memory is empty)'
+    }
+
+    let next = current
+
+    if (action === 'append') {
+      const note = (args.content || '').trim()
+      if (!note) return 'Nothing to append: `content` was empty.'
+      next = current ? `${current}\n${note}` : note
+    } else if (action === 'replace') {
+      const find = (args.find || '').trim()
+      const content = (args.content || '').trim()
+      if (!find) return 'Cannot replace: `find` was empty.'
+      if (!current.includes(find)) {
+        return `Cannot replace: text not found in memory. Current memory:\n${current || '(empty)'}`
+      }
+      next = current.split(find).join(content)
+    } else if (action === 'delete') {
+      const find = (args.find || '').trim()
+      if (!find) return 'Cannot delete: `find` was empty.'
+      if (!current.includes(find)) {
+        return `Cannot delete: text not found in memory. Current memory:\n${current || '(empty)'}`
+      }
+      // Remove the matched text and tidy up leftover blank lines
+      next = current
+        .split(find)
+        .join('')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim()
+    }
+
+    next = next.trim()
+
+    if (next.length > this.MAX_MEMORY_CHARS) {
+      return `Memory is full (${next.length}/${this.MAX_MEMORY_CHARS} chars). Consolidate it first: use action "replace" or "delete" to remove or merge less important notes before adding new ones.`
+    }
+
+    await this.writeAgentMemory(agentId, next)
+    return `Memory updated. It now contains ${next.length} characters.`
+  }
+
+  /**
+   * Flatten legacy approved memories into a single markdown document.
+   * Returns '' when there is nothing to migrate.
+   */
+  private static async flattenLegacyMemories(
+    agentId: string,
+  ): Promise<string> {
+    let entries
+    try {
+      entries =
+        agentId === GLOBAL_MEMORY_AGENT_ID
+          ? await getGlobalMemoriesDecrypted()
+          : await getMemoriesByAgentIdDecrypted(agentId)
+    } catch {
+      return ''
+    }
+
+    const approved = entries.filter(
+      (m) =>
+        m.validationStatus === 'approved' ||
+        m.validationStatus === 'auto_approved',
+    )
+    if (approved.length === 0) return ''
+
+    const lines = approved
+      .map((m) => {
+        const title = typeof m.title === 'string' ? m.title.trim() : ''
+        const content = typeof m.content === 'string' ? m.content.trim() : ''
+        if (title && content) return `- ${title}: ${content}`
+        return `- ${title || content}`
+      })
+      .filter((l) => l.trim() !== '-')
+
+    if (lines.length === 0) return ''
+    return `# What I remember\n\n${lines.join('\n')}`
+  }
+
+  /**
+   * Compact the agent's memory document with a single LLM pass: merge
+   * duplicates, drop stale/one-off notes, and keep it concise and under budget
+   * while preserving durable facts, preferences, goals and corrections.
+   *
+   * KISS: this is an occasional, user- or size-triggered operation — NOT a
+   * per-turn call. Returns the compacted document (also persisted).
+   */
+  static async compactAgentMemory(agentId: string): Promise<string> {
+    const current = await this.readAgentMemory(agentId)
+    if (!current.trim()) return ''
+
+    const config = await CredentialService.getActiveConfig()
+    if (!config) {
+      console.warn('No LLM config available for memory compaction')
+      return current
+    }
+
+    const messages: LLMMessage[] = [
+      { role: 'system', content: MEMORY_COMPACTION_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `Compact this memory document. Keep it under ${this.MAX_MEMORY_CHARS} characters. Return ONLY the cleaned markdown, no commentary:\n\n${current}`,
+      },
+    ]
+
+    try {
+      const response = await LLMService.chat(messages, {
+        ...config,
+        temperature: 0.2,
+        maxTokens: 1500,
+      })
+
+      let compacted = response.content.trim()
+      // Strip accidental markdown code fences around the whole doc
+      const fenced = compacted.match(/^```(?:markdown|md)?\s*([\s\S]*?)\s*```$/m)
+      if (fenced) compacted = fenced[1].trim()
+
+      // Never let compaction lose everything or blow the budget
+      if (!compacted) return current
+      if (compacted.length > this.MAX_MEMORY_CHARS) {
+        compacted = compacted.slice(0, this.MAX_MEMORY_CHARS).trim()
+      }
+
+      await this.writeAgentMemory(agentId, compacted)
+      return compacted
+    } catch (error) {
+      console.error('Failed to compact memory:', error)
+      return current
+    }
+  }
+
+  /**
+   * Opt-in auto-capture: after a conversation turn, make a SINGLE LLM call to
+   * extract any new durable facts the user shared and append them to the memory
+   * document. This is the cheap, document-based replacement for the old
+   * per-turn extraction → event → review pipeline (see docs/more/MEMORY.md).
+   *
+   * Returns the notes that were added (empty array when nothing was captured).
+   */
+  static async autoCaptureToMemory(
+    userMessage: string,
+    assistantMessage: string,
+    agentId: string,
+    lang?: Lang,
+  ): Promise<string[]> {
+    const config = await CredentialService.getActiveConfig()
+    if (!config) return []
+
+    const current = await this.readAgentMemory(agentId)
+
+    const languageInstruction = lang
+      ? `\n\nWrite the notes in ${languages[lang]}.`
+      : ''
+
+    const messages: LLMMessage[] = [
+      {
+        role: 'system',
+        content: AUTO_CAPTURE_SYSTEM_PROMPT + languageInstruction,
+      },
+      {
+        role: 'user',
+        content: `CURRENT MEMORY:\n${current || '(empty)'}\n\nLATEST EXCHANGE:\nUSER: ${userMessage.trim()}\nASSISTANT: ${assistantMessage.trim()}`,
+      },
+    ]
+
+    let out: string
+    try {
+      const response = await LLMService.chat(messages, {
+        ...config,
+        temperature: 0.2,
+        maxTokens: 500,
+      })
+      out = response.content.trim()
+    } catch (error) {
+      console.warn('Auto-capture failed (non-critical):', error)
+      return []
+    }
+
+    if (!out || /^NONE\.?$/i.test(out)) return []
+
+    // Keep only bullet lines, drop anything already present (case-insensitive).
+    const normalize = (s: string) =>
+      s
+        .replace(/^[-*]\s*/, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim()
+    const existing = new Set(
+      current.split('\n').map(normalize).filter(Boolean),
+    )
+
+    const newNotes = out
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => /^[-*]\s+/.test(l))
+      .map((l) => `- ${l.replace(/^[-*]\s*/, '').trim()}`)
+      .filter((l) => l.length > 2 && !existing.has(normalize(l)))
+
+    if (newNotes.length === 0) return []
+
+    const next = (current ? `${current}\n` : '') + newNotes.join('\n')
+    if (next.length > this.MAX_MEMORY_CHARS) {
+      // Don't overflow the budget silently; leave compaction to the user/agent.
+      console.log('Auto-capture skipped: memory document is at its size budget.')
+      return []
+    }
+
+    await this.writeAgentMemory(agentId, next.trim())
+    return newNotes
   }
 
   /**
@@ -846,3 +1144,13 @@ export const generateMemorySynthesis =
   MemoryLearningService.generateMemorySynthesis.bind(MemoryLearningService)
 export const buildMemoryContextForChat =
   MemoryLearningService.buildMemoryContextForChat.bind(MemoryLearningService)
+export const readAgentMemory =
+  MemoryLearningService.readAgentMemory.bind(MemoryLearningService)
+export const writeAgentMemory =
+  MemoryLearningService.writeAgentMemory.bind(MemoryLearningService)
+export const applyMemoryOperation =
+  MemoryLearningService.applyMemoryOperation.bind(MemoryLearningService)
+export const compactAgentMemory =
+  MemoryLearningService.compactAgentMemory.bind(MemoryLearningService)
+export const autoCaptureToMemory =
+  MemoryLearningService.autoCaptureToMemory.bind(MemoryLearningService)

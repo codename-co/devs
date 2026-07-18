@@ -118,13 +118,20 @@ export {
   artifactPlugins,
 } from './artifact'
 
+// Orchestration tools (meta-agent delegation)
+export { delegatePlugin, DELEGATE_TOOL_DEFINITION } from './delegate'
+
+// Memory tools (agent long-term memory)
+export { rememberPlugin, REMEMBER_TOOL_DEFINITION } from './memory'
+export type { RememberParams, RememberResult } from './memory'
+
 // Connector tools - re-export all from connectors
 export * from './connectors'
 
 // Import all plugins for bulk registration
 import { calculatePlugin } from './calculate'
 import { executePlugin } from './execute'
-// import { generatePresentationPlugin } from './generate-presentation'
+import { generatePresentationPlugin } from './generate-presentation'
 import { generatePptxPlugin } from './generate-pptx'
 import {
   searchKnowledgePlugin,
@@ -151,6 +158,8 @@ import {
   listTaskArtifactsPlugin,
   updateArtifactPlugin,
 } from './artifact'
+import { delegatePlugin } from './delegate'
+import { rememberPlugin } from './memory'
 import { allConnectorPlugins } from './connectors'
 import type { ToolPlugin } from '../types'
 
@@ -164,7 +173,7 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   // Code
   executePlugin,
   // Presentation
-  // generatePresentationPlugin,
+  generatePresentationPlugin,
   generatePptxPlugin,
   // Knowledge
   searchKnowledgePlugin,
@@ -190,6 +199,10 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   readArtifactPlugin,
   listTaskArtifactsPlugin,
   updateArtifactPlugin,
+  // Orchestration (meta-agent delegation)
+  delegatePlugin,
+  // Memory (agent long-term memory)
+  rememberPlugin,
 ]
 
 /**
@@ -208,7 +221,7 @@ export const allPlugins: ToolPlugin<any, any>[] = [
 export const pluginsByCategory = {
   math: [calculatePlugin],
   code: [executePlugin],
-  // presentation: [generatePresentationPlugin],
+  presentation: [generatePresentationPlugin],
   pptx: [generatePptxPlugin],
   knowledge: [
     searchKnowledgePlugin,
@@ -233,6 +246,8 @@ export const pluginsByCategory = {
     listTaskArtifactsPlugin,
     updateArtifactPlugin,
   ],
+  orchestration: [delegatePlugin],
+  memory: [rememberPlugin],
   connector: allConnectorPlugins,
 } as const
 

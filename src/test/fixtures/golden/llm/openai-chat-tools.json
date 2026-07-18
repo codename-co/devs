@@ -1,0 +1,19 @@
+{
+  "content": "",
+  "finish_reason": "tool_calls",
+  "tool_calls": [
+    {
+      "function": {
+        "arguments": "{\"location\":\"Paris\"}",
+        "name": "get_weather"
+      },
+      "id": "call_1",
+      "type": "function"
+    }
+  ],
+  "usage": {
+    "completionTokens": 8,
+    "promptTokens": 20,
+    "totalTokens": 28
+  }
+}

@@ -40,24 +40,31 @@ import {
   arePresentationToolsRegistered,
   registerArtifactTools,
   areArtifactToolsRegistered,
+  registerMemoryTools,
+  areMemoryToolsRegistered,
 } from '@/lib/tool-executor'
 import { KNOWLEDGE_TOOL_DEFINITIONS } from '@/lib/knowledge-tools'
 import { MATH_TOOL_DEFINITIONS } from '@/lib/math-tools'
 import { CODE_TOOL_DEFINITIONS } from '@/lib/code-tools'
 // import { PRESENTATION_TOOL_DEFINITIONS } from '@/lib/presentation-tools'
-import { getToolDefinitionsForProvider } from '@/features/connectors/tools'
+// Connector tool definitions live in the large `@/features/connectors/tools`
+// module; imported lazily inside the handler below (REPORT §4 Phase 1).
 import { connectors as connectorsMap } from '@/lib/yjs/maps'
 import type { Connector } from '@/features/connectors/types'
 import {
   WIKIPEDIA_SEARCH_TOOL_DEFINITION,
   WIKIPEDIA_ARTICLE_TOOL_DEFINITION,
+} from '@/tools/plugins/wikipedia'
+import {
   WIKIDATA_SEARCH_TOOL_DEFINITION,
   WIKIDATA_ENTITY_TOOL_DEFINITION,
   WIKIDATA_SPARQL_TOOL_DEFINITION,
+} from '@/tools/plugins/wikidata'
+import {
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
-  SKILL_TOOL_DEFINITIONS,
-} from '@/tools/plugins'
+} from '@/tools/plugins/arxiv'
+import { SKILL_TOOL_DEFINITIONS } from '@/tools/plugins/skill-tools'
 import { ARTIFACT_TOOL_DEFINITIONS } from '@/lib/artifact-tools'
 import { getEffectiveSettings } from '@/stores/userStore'
 import type {
@@ -106,6 +113,9 @@ async function getConnectorToolDefinitions(): Promise<ToolDefinition[]> {
       connectorsByProvider.set(connector.provider, existing)
     }
 
+    const { getToolDefinitionsForProvider } = await import(
+      '@/features/connectors/tools'
+    )
     const tools: ToolDefinition[] = []
     for (const [provider, providerConnectors] of connectorsByProvider) {
       const providerTools = getToolDefinitionsForProvider(provider)
@@ -163,6 +173,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
   if (!areConnectorToolsRegistered()) registerConnectorTools()
   if (!arePresentationToolsRegistered()) registerPresentationTools()
   if (!areArtifactToolsRegistered()) registerArtifactTools()
+  if (!areMemoryToolsRegistered()) registerMemoryTools()
 
   // Gather all available tool definitions
   const allTools: ToolDefinition[] = [
@@ -505,10 +516,15 @@ export async function runAgent(
       break
     }
 
-    // Add assistant message with tool calls to history
+    // Add assistant message with tool calls to history. Content must be
+    // non-empty — some providers (e.g. Anthropic) reject empty text content
+    // blocks — so substitute a short description when the model returned only
+    // a tool call with no preamble text.
     messages.push({
       role: 'assistant',
-      content: turnResult.content || '',
+      content:
+        turnResult.content ||
+        `(Calling ${(turnResult.toolCalls ?? []).map((tc) => tc.name).join(', ')}…)`,
     })
 
     // Add tool results back to conversation

@@ -134,7 +134,7 @@ export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
         }
 
         // Create new provider
-        sttRef.current = createSTTProvider(type, { modelId: sttModelId })
+        sttRef.current = await createSTTProvider(type, { modelId: sttModelId })
 
         // Set progress callback if supported
         if ('setProgressCallback' in sttRef.current) {
@@ -188,7 +188,7 @@ export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
         }
 
         // Create new provider
-        ttsRef.current = createTTSProvider(type, {
+        ttsRef.current = await createTTSProvider(type, {
           modelId: ttsModelId,
           dtype: ttsDtype,
         })

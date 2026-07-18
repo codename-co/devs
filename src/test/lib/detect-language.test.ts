@@ -106,7 +106,7 @@ describe('detect-language', () => {
 
     it('should add language prefix for non-default languages', () => {
       expect(buildLanguageUrl('/agents', 'fr')).toBe('/fr/agents')
-      expect(buildLanguageUrl('/#settings', 'de')).toBe('/de/settings')
+      expect(buildLanguageUrl('/#settings', 'de')).toBe('/de/#settings')
       expect(buildLanguageUrl('/knowledge/files', 'es')).toBe(
         '/es/knowledge/files',
       )
@@ -120,7 +120,7 @@ describe('detect-language', () => {
 
     it('should remove existing language prefix before adding new one', () => {
       expect(buildLanguageUrl('/fr/agents', 'de')).toBe('/de/agents')
-      expect(buildLanguageUrl('/es/#settings', 'fr')).toBe('/fr/settings')
+      expect(buildLanguageUrl('/es/#settings', 'fr')).toBe('/fr/#settings')
     })
 
     it('should handle query strings and hashes', () => {

@@ -15,7 +15,6 @@
 
 import { createToolPlugin } from '../registry'
 import { getSkillByName, getEnabledSkills } from '@/stores/skillStore'
-import { sandbox, checkPackageCompatibility } from '@/lib/sandbox'
 import {
   resolveInputFiles,
   processOutputFiles,
@@ -463,6 +462,12 @@ export const runSkillScriptPlugin: ToolPlugin<RunSkillScriptArgs, string> =
       }
 
       // ── Check package compatibility (Python only) ─────────────
+      // Lazily load the WASM sandbox (QuickJS/Pyodide) only when a skill
+      // script actually runs, so it never lands in the boot graph
+      // (REPORT §4 Phase 1).
+      const { sandbox, checkPackageCompatibility } = await import(
+        '@/lib/sandbox'
+      )
       const incompatible = packages.filter(
         (pkg) => checkPackageCompatibility(pkg) === 'incompatible',
       )

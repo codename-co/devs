@@ -34,6 +34,8 @@ export type ToolCategory =
   | 'utility' // General utility tools
   | 'skill' // Agent Skills (SkillsMP / GitHub)
   | 'artifact' // Shared artifact read/write
+  | 'memory' // Agent long-term memory (remember across conversations)
+  | 'orchestration' // Meta-agent orchestration (delegate to sub-agents)
   | 'custom' // User-defined tools
 
 // ============================================================================

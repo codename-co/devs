@@ -5,7 +5,19 @@
  * Uses mammoth.js for DOCX to HTML/text conversion.
  */
 
-import mammoth from 'mammoth'
+// The `mammoth` DOCX parser (~heavy) is dynamically imported the first time a
+// DOCX is actually converted, so it never lands in the boot graph
+// (REPORT §4 Phase 1).
+type Mammoth = typeof import('mammoth')
+let mammothPromise: Promise<Mammoth> | null = null
+function loadMammoth(): Promise<Mammoth> {
+  if (!mammothPromise) {
+    mammothPromise = import('mammoth').then(
+      (m) => ((m as any).default ?? m) as Mammoth,
+    )
+  }
+  return mammothPromise
+}
 
 /**
  * MIME types for Microsoft Office documents
@@ -63,6 +75,7 @@ export async function convertDocxToText(
     const arrayBuffer = bytes.buffer
 
     // Use mammoth to extract raw text
+    const mammoth = await loadMammoth()
     const result = await mammoth.extractRawText({ arrayBuffer })
 
     // Collect any warnings
@@ -104,6 +117,7 @@ export async function convertDocxToHtml(
     const arrayBuffer = bytes.buffer
 
     // Use mammoth to convert to HTML
+    const mammoth = await loadMammoth()
     const result = await mammoth.convertToHtml({ arrayBuffer })
 
     // Collect any warnings
