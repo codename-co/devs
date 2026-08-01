@@ -2,6 +2,9 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon, Title } from '@/components'
 import { useI18n, useUrl } from '@/i18n'
+import { isTeams } from '@/lib/teams/config'
+import { useIsAdmin, useTeamsAuth } from '@/features/auth/hooks'
+import { PresenceBar } from '@/features/auth/components/PresenceBar'
 import {
   ALL_SPACES_ID,
   ALL_SPACES_URL_SEGMENT,
@@ -19,8 +22,12 @@ import { useMarketplaceStore } from '@/features/marketplace'
 import { getAppPrimaryPageUrl } from '@/features/marketplace/store'
 import { getExtensionColorClass } from '@/features/marketplace/utils'
 import {
+  Avatar,
   Button,
+  Description,
+  Dropdown,
   Kbd,
+  Label,
   Link,
   ListBox,
   ScrollShadow,
@@ -435,6 +442,9 @@ export const Sidebar = memo(function Sidebar({
     isCollapsedProp !== undefined ? isCollapsedProp : isCollapsedFromStore
   const installedApps = useInstalledApps()
   const activeNavItem = useActiveNavItem(installedApps)
+  const activeSpaceId = useActiveSpaceId()
+  const isAdmin = useIsAdmin()
+  const { isAuthenticated, isLoading: isAuthLoading, user, login, logout } = useTeamsAuth()
 
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -542,6 +552,11 @@ export const Sidebar = memo(function Sidebar({
       {/* Space switcher */}
       <SpaceSwitcher isCollapsed={isCollapsed} />
 
+      {/* Teams presence bar — shows online teammates in enterprise spaces */}
+      {!isCollapsed && isTeams && (
+        <PresenceBar spaceId={activeSpaceId} className="px-0" />
+      )}
+
       {/* Navigation */}
       <ScrollShadow hideScrollBar className="min-h-0 flex-1 overflow-y-auto">
         {isCollapsed ? (
@@ -626,15 +641,197 @@ export const Sidebar = memo(function Sidebar({
         )}
       </ScrollShadow>
 
-      {/* Bottom utility row */}
-      <div
-        className={`flex ${isCollapsed ? 'flex-col items-center gap-1' : 'items-center gap-1 px-1'}`}
-      >
-        <NotificationButtonV3 showKbd={!isCollapsed} />
-        <ThemeToggleButton showKbd={!isCollapsed} />
-        <AboutButton showKbd={!isCollapsed} />
-        <SettingsButton onPress={onOpenSettings} showKbd={!isCollapsed} />
-      </div>
+      {/* Bottom section */}
+      {isTeams && isAuthenticated && user ? (
+        /* ── Authenticated Teams user ── */
+        isCollapsed ? (
+          <div className="flex flex-col items-center gap-1">
+            <NotificationButtonV3 />
+            <ThemeToggleButton />
+            <Separator className="my-0.5 w-8" />
+            <Dropdown>
+              <Tooltip delay={0}>
+                <Dropdown.Trigger>
+                  <button
+                    className="relative flex h-8 w-8 items-center justify-center rounded-lg outline-none hover:bg-default/40 transition-colors"
+                    aria-label={user.name}
+                  >
+                    <Avatar size="sm" color={isAdmin ? 'warning' : 'accent'} className="size-7">
+                      {user.avatar ? (
+                        <Avatar.Image alt={user.name} src={user.avatar} />
+                      ) : null}
+                      <Avatar.Fallback className="text-[10px] font-bold">
+                        {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </Avatar.Fallback>
+                    </Avatar>
+                    {/* Online indicator */}
+                    <span className="absolute right-0.5 bottom-0.5 size-2 rounded-full bg-success ring-2 ring-background" />
+                  </button>
+                </Dropdown.Trigger>
+                <Tooltip.Content placement="right">{user.name}</Tooltip.Content>
+              </Tooltip>
+              <Dropdown.Popover placement="right bottom" className="min-w-[220px]">
+                <Dropdown.Menu onAction={(key) => {
+                  if (key === 'admin') navigate(url('/admin/dashboard'))
+                  else if (key === 'settings') onOpenSettings()
+                  else if (key === 'about') navigate(url('/about'))
+                  else if (key === 'logout') logout()
+                }}>
+                  {/* User identity header */}
+                  <Dropdown.Section>
+                    <Dropdown.Item id="profile" textValue={user.name} className="cursor-default opacity-100" isDisabled>
+                      <div className="flex items-center gap-3 py-1">
+                        <Avatar size="sm" color={isAdmin ? 'warning' : 'accent'}>
+                          {user.avatar ? <Avatar.Image alt={user.name} src={user.avatar} /> : null}
+                          <Avatar.Fallback className="text-[10px] font-bold">
+                            {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </Avatar.Fallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <Label className="text-sm font-medium">{user.name}</Label>
+                          <Description className="text-xs">{user.email}</Description>
+                        </div>
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown.Section>
+                  <Separator />
+                  <Dropdown.Section>
+                    {isAdmin ? (
+                      <Dropdown.Item id="admin" textValue={t('Admin')}>
+                        <Icon name="StatsUpSquare" className="text-warning" size="sm" />
+                        <Label>{t('Admin')}</Label>
+                      </Dropdown.Item>
+                    ) : null}
+                    <Dropdown.Item id="settings" textValue={t('Settings')}>
+                      <Icon name="Settings" className="text-muted" size="sm" />
+                      <Label>{t('Settings')}</Label>
+                    </Dropdown.Item>
+                    <Dropdown.Item id="about" textValue={t('About')}>
+                      <Icon name="InfoCircle" className="text-muted" size="sm" />
+                      <Label>{t('About')}</Label>
+                    </Dropdown.Item>
+                  </Dropdown.Section>
+                  <Separator />
+                  <Dropdown.Item id="logout" textValue={t('Sign out')} variant="danger">
+                    <Icon name="LogOut" size="sm" />
+                    <Label>{t('Sign out')}</Label>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {/* Utility icons row */}
+            <div className="flex items-center gap-1 px-1">
+              <NotificationButtonV3 showKbd />
+              <ThemeToggleButton showKbd />
+              <span className="flex-1" />
+            </div>
+            {/* User identity bar with dropdown */}
+            <Dropdown>
+              <Dropdown.Trigger>
+                <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left outline-none hover:bg-default/40 transition-colors">
+                  <div className="relative">
+                    <Avatar size="sm" color={isAdmin ? 'warning' : 'accent'}>
+                      {user.avatar ? <Avatar.Image alt={user.name} src={user.avatar} /> : null}
+                      <Avatar.Fallback className="text-[10px] font-bold">
+                        {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </Avatar.Fallback>
+                    </Avatar>
+                    <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-success ring-2 ring-background" />
+                  </div>
+                  <div className="flex flex-1 flex-col overflow-hidden">
+                    <span className="truncate text-sm font-medium text-foreground">{user.name}</span>
+                    <span className="truncate text-xs text-muted">{user.email}</span>
+                  </div>
+                  <Icon name="NavArrowRight" className="text-muted shrink-0" style={{ width: 14, height: 14 }} />
+                </button>
+              </Dropdown.Trigger>
+              <Dropdown.Popover placement="top start" className="min-w-[220px]">
+                <Dropdown.Menu onAction={(key) => {
+                  if (key === 'admin') navigate(url('/admin/dashboard'))
+                  else if (key === 'settings') onOpenSettings()
+                  else if (key === 'about') navigate(url('/about'))
+                  else if (key === 'logout') logout()
+                }}>
+                  <Dropdown.Section>
+                    {isAdmin ? (
+                      <Dropdown.Item id="admin" textValue={t('Admin')}>
+                        <Icon name="StatsUpSquare" className="text-warning" size="sm" />
+                        <Label>{t('Admin')}</Label>
+                        <Description>{t('Dashboard')}</Description>
+                      </Dropdown.Item>
+                    ) : null}
+                    <Dropdown.Item id="settings" textValue={t('Settings')}>
+                      <Icon name="Settings" className="text-muted" size="sm" />
+                      <Label>{t('Settings')}</Label>
+                      <Kbd slot="keyboard">⌘,</Kbd>
+                    </Dropdown.Item>
+                    <Dropdown.Item id="about" textValue={t('About')}>
+                      <Icon name="InfoCircle" className="text-muted" size="sm" />
+                      <Label>{t('About')}</Label>
+                    </Dropdown.Item>
+                  </Dropdown.Section>
+                  <Separator />
+                  <Dropdown.Item id="logout" textValue={t('Sign out')} variant="danger">
+                    <Icon name="LogOut" size="sm" />
+                    <Label>{t('Sign out')}</Label>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          </div>
+        )
+      ) : isTeams && !isAuthenticated ? (
+        /* ── Teams mode, not logged in ── */
+        <div className={`flex ${isCollapsed ? 'flex-col items-center gap-1' : 'flex-col gap-2'}`}>
+          <div className={`flex ${isCollapsed ? 'flex-col items-center gap-1' : 'items-center gap-1 px-1'}`}>
+            <NotificationButtonV3 showKbd={!isCollapsed} />
+            <ThemeToggleButton showKbd={!isCollapsed} />
+            <AboutButton showKbd={!isCollapsed} />
+            <SettingsButton onPress={onOpenSettings} showKbd={!isCollapsed} />
+          </div>
+          {isCollapsed ? (
+            <Tooltip delay={0}>
+              <Button
+                isIconOnly
+                variant="primary"
+                size="sm"
+                onPress={login}
+                isDisabled={isAuthLoading}
+                aria-label={t('Sign in')}
+              >
+                <Icon name="LogIn" />
+              </Button>
+              <Tooltip.Content placement="right">
+                {t('Sign in')}
+              </Tooltip.Content>
+            </Tooltip>
+          ) : (
+            <div className="px-0.5">
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={login}
+                isDisabled={isAuthLoading}
+                fullWidth
+              >
+                <Icon name="LogIn" />
+                {t('Sign in')}
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ── Free tier (no Teams) ── */
+        <div className={`flex ${isCollapsed ? 'flex-col items-center gap-1' : 'items-center gap-1 px-1'}`}>
+          <NotificationButtonV3 showKbd={!isCollapsed} />
+          <ThemeToggleButton showKbd={!isCollapsed} />
+          <AboutButton showKbd={!isCollapsed} />
+          <SettingsButton onPress={onOpenSettings} showKbd={!isCollapsed} />
+        </div>
+      )}
     </aside>
   )
 

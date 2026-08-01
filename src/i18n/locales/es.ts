@@ -95,6 +95,9 @@ export const es: I18n = {
   'Observe and analyze traces and metrics':
     'Observar y analizar rastros y métricas',
   Admin: 'Admin',
+  'Sign in': 'Iniciar sesión',
+  'Sign out': 'Cerrar sesión',
+  Dashboard: 'Panel de control',
 
   // PromptArea
   'What are we working on?': '¿Necesitas que se haga algo?',

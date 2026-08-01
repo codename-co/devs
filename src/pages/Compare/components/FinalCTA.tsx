@@ -36,7 +36,7 @@ export const FinalCTA = ({ icon = 'Heart' }: FinalCTAProps) => {
       label: t('Try {productName} Free →', {
         productName: PRODUCT.displayName,
       }),
-      href: url('/'),
+      href: url(''),
     },
     {
       label: t('View on GitHub'),

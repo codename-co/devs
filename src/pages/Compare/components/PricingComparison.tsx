@@ -39,7 +39,7 @@ export const PricingComparison = ({ altTier }: PricingComparisonProps) => {
       label: t('Try {productName} Free →', {
         productName: PRODUCT.displayName,
       }),
-      href: url('/'),
+      href: url(''),
     },
   }
 

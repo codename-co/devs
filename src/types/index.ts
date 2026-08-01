@@ -264,6 +264,7 @@ export type LLMProvider =
   | 'claude-code'
   | 'chatjimmy'
   | 'github-copilot'
+  | 'devs-enterprise'
   | 'custom'
   // Image generation providers
   | 'stability'
@@ -1232,6 +1233,10 @@ export interface Space {
   id: string
   name: string
   icon?: IconName
+  /** Space ownership type: 'personal' (user-created, local) or 'enterprise' (org-managed, synced) */
+  ownership?: 'personal' | 'enterprise'
+  /** Org ID for enterprise spaces — links to Teams config */
+  orgId?: string
   createdAt: Date | string
   updatedAt?: Date | string
 }

@@ -94,6 +94,9 @@ export const ar: I18n = {
   Traces: 'التتبعات',
   'Observe and analyze traces and metrics': 'مراقبة وتحليل التتبعات والقياسات',
   Admin: 'المسؤول',
+  'Sign in': 'تسجيل الدخول',
+  'Sign out': 'تسجيل الخروج',
+  Dashboard: 'لوحة التحكم',
 
   // PromptArea
   'What are we working on?': 'ما الذي نعمل عليه؟',

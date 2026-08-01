@@ -1,6 +1,7 @@
 import { spaces, useLiveMap, useLiveValue } from '@/lib/yjs'
 import { userSettings } from '@/stores/userStore'
 import { ALL_SPACES_ID, DEFAULT_SPACE_ID, type Space } from '@/types'
+import { isTeams } from '@/lib/teams/config'
 
 // ============================================================================
 // Synthetic spaces (always exist, cannot be deleted)
@@ -48,12 +49,15 @@ export function createSpace(name: string): Space {
 
 /**
  * Rename an existing space.
- * The default space cannot be renamed.
+ * The default space and enterprise spaces cannot be renamed by users.
  */
 export function renameSpace(id: string, name: string): void {
   if (id === DEFAULT_SPACE_ID || id === ALL_SPACES_ID) return
   const existing = spaces.get(id)
   if (!existing) return
+
+  // Enterprise spaces cannot be renamed by users (admin manages via API)
+  if (existing.ownership === 'enterprise') return
 
   const trimmed = name.trim()
   if (!trimmed) return
@@ -88,11 +92,16 @@ export function updateSpace(
 }
 
 /**
- * Delete a space. The default space cannot be deleted.
+ * Delete a space. The default space and enterprise spaces cannot be deleted.
  * Entities that belonged to this space will be reassigned to the default space.
  */
 export function deleteSpace(id: string): void {
   if (id === DEFAULT_SPACE_ID || id === ALL_SPACES_ID) return
+
+  // Enterprise spaces cannot be deleted by users
+  const existing = spaces.get(id)
+  if (existing?.ownership === 'enterprise') return
+
   spaces.delete(id)
 
   // If the deleted space was active, switch back to default
@@ -189,4 +198,64 @@ export function useActiveSpace(): Space {
   if (id === ALL_SPACES_ID) return ALL_SPACES
   if (!ws) return DEFAULT_SPACE
   return ws
+}
+
+// ============================================================================
+// Enterprise space helpers
+// ============================================================================
+
+/**
+ * Check if a space is an enterprise space.
+ *
+ * @param spaceId - The space ID to check
+ * @returns `true` if the space has `ownership: 'enterprise'`
+ */
+export function isEnterpriseSpace(spaceId: string | undefined): boolean {
+  if (!spaceId || spaceId === DEFAULT_SPACE_ID || spaceId === ALL_SPACES_ID) return false
+  const space = spaces.get(spaceId)
+  return space?.ownership === 'enterprise'
+}
+
+/**
+ * Check if the active space is an enterprise space.
+ */
+export function isActiveSpaceEnterprise(): boolean {
+  return isEnterpriseSpace(getActiveSpaceId())
+}
+
+/**
+ * Get all enterprise spaces.
+ */
+export function getEnterpriseSpaces(): Space[] {
+  return Array.from(spaces.values()).filter(s => s.ownership === 'enterprise')
+}
+
+/**
+ * Get all personal (non-enterprise) spaces.
+ */
+export function getPersonalSpaces(): Space[] {
+  return Array.from(spaces.values()).filter(s => s.ownership !== 'enterprise')
+}
+
+/**
+ * React hook: subscribe to enterprise spaces.
+ */
+export function useEnterpriseSpaces(): Space[] {
+  const stored = useLiveMap(spaces)
+  return stored.filter(s => s.ownership === 'enterprise')
+}
+
+/**
+ * React hook: check if the active space is enterprise.
+ */
+export function useIsActiveSpaceEnterprise(): boolean {
+  const space = useActiveSpace()
+  return space.ownership === 'enterprise'
+}
+
+/**
+ * React hook: check if Teams mode is active.
+ */
+export function useIsTeams(): boolean {
+  return isTeams
 }

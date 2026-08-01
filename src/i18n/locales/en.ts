@@ -94,6 +94,9 @@ export const en = [
   'Traces',
   'Observe and analyze traces and metrics',
   'Admin',
+  'Sign in',
+  'Sign out',
+  'Dashboard',
 
   // PromptArea
   'What are we working on?',

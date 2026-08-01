@@ -1,9 +1,23 @@
 import { LLMProviderInterface, LLMMessage, LLMResponse } from '../index'
 import { LLMConfig } from '@/types'
 import type { TextGenerationPipeline } from '@huggingface/transformers'
+import { FilesetResolver, LlmInference } from '@mediapipe/tasks-genai'
 import { getHuggingFaceHost, configureTransformersHost } from '@/lib/huggingface'
 import { inspectAllCaches, startCacheMonitoring } from '../cache-debug'
 import { convertMessagesToTextOnlyFormat } from '../attachment-processor'
+
+/**
+ * Registry mapping local model IDs to their LiteRT .task file URLs.
+ * These models use MediaPipe GenAI for inference instead of transformers.js + ONNX,
+ * because their QAT quantization (q2f16 / 2-bit) is not supported by ONNX Runtime.
+ * The MediaPipe WASM runtime handles all QAT bit-widths natively.
+ */
+const LITERT_MODEL_REGISTRY: Record<string, string> = {
+  'onnx-community/gemma-4-E2B-it-qat-mobile-ONNX':
+    'https://huggingface.co/huggingworld/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task',
+  'huggingworld/gemma-4-E2B-it-litert-lm':
+    'https://huggingface.co/huggingworld/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task',
+}
 
 // The `@huggingface/transformers` runtime (WebGPU/WASM, tens of MB) must never
 // land in the boot graph (REPORT §4 Phase 1). It is dynamically imported and
@@ -71,15 +85,20 @@ export class LocalLLMProvider implements LLMProviderInterface {
   private static useWasmFallback = false
 
   // Default model, optimized for browser inference
-  // LFM2.5-350M: Liquid SSM architecture, 243MB q4f16, 9 languages
-  public static readonly DEFAULT_MODEL =
-    // 'onnx-community/Qwen3.5-0.8B-ONNX'
-    // 'onnx-community/gemma-4-E2B-it-ONNX'
-    'onnx-community/granite-4.0-350m-ONNX-web'
-  // isLowEndDevice()
-  //   ? 'onnx-community/granite-4.0-350m-ONNX-web'
-  //   : 'onnx-community/granite-4.0-micro-ONNX-web'
-  // 'onnx-community/LFM2.5-350M-ONNX'
+  // Default model. Uses MediaPipe GenAI + LiteRT (.task) for inference — the QAT
+  // quantization (2-bit / q2f16) is not supported by ONNX Runtime but is handled
+  // natively by the MediaPipe WASM runtime, making it ideal for lower-end devices.
+  // See LITERT_MODEL_REGISTRY for the .task URL this ID resolves to.
+  public static readonly DEFAULT_MODEL = 'onnx-community/gemma-4-E2B-it-qat-mobile-ONNX'
+  // Alternatives (all use transformers.js + ONNX):
+  // 'onnx-community/gemma-4-E2B-it-ONNX'       — non-QAT, q4f16, ~1.1 GB
+  // 'onnx-community/Qwen3.5-0.8B-ONNX'
+  // 'onnx-community/granite-4.0-350m-ONNX-web'
+
+  // ---- MediaPipe GenAI state (LiteRT models only) ----
+  private static mediaPipeInference: LlmInference | null = null
+  private static currentLiteRTModel: string | null = null
+  private static mediaPipeLoadingPromise: Promise<LlmInference> | null = null
 
   // Progress callback for model loading
   private static progressCallback:
@@ -164,6 +183,273 @@ export class LocalLLMProvider implements LLMProviderInterface {
   }
 
   /**
+   * Returns true when a model ID is served via MediaPipe GenAI + LiteRT (.task)
+   * rather than transformers.js + ONNX.
+   */
+  static isLiteRTModel(modelName: string): boolean {
+    return modelName in LITERT_MODEL_REGISTRY
+  }
+
+  /**
+   * Format a messages array into a Gemma 4 instruction-tuning prompt string.
+   * MediaPipe's LlmInference.generateResponse() takes a raw string, so we
+   * apply the turn-marker template here instead of relying on a tokenizer.
+   *
+   * Gemma 4 IT format:
+   *   <start_of_turn>user\n{content}<end_of_turn>\n
+   *   <start_of_turn>model\n{content}<end_of_turn>\n   (for prior turns)
+   *   <start_of_turn>model\n                          (generation prompt)
+   */
+  private formatMessagesForLiteRT(messages: LLMMessage[]): string {
+    let prompt = ''
+    // Collect system instructions to prepend into the first user turn
+    const systemParts: string[] = []
+    const conversationMessages: LLMMessage[] = []
+
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        systemParts.push(typeof msg.content === 'string' ? msg.content : '')
+      } else {
+        conversationMessages.push(msg)
+      }
+    }
+
+    for (let i = 0; i < conversationMessages.length; i++) {
+      const msg = conversationMessages[i]
+      const content = msg.content
+
+      const isFirstUser = msg.role === 'user' && i === 0 && systemParts.length > 0
+      const text = isFirstUser ? `${systemParts.join('\n')}\n${content}` : content
+
+      if (msg.role === 'user') {
+        prompt += `<start_of_turn>user\n${text}<end_of_turn>\n`
+      } else if (msg.role === 'assistant') {
+        prompt += `<start_of_turn>model\n${text}<end_of_turn>\n`
+      }
+    }
+
+    // Append the generation prompt
+    prompt += '<start_of_turn>model\n'
+    return prompt
+  }
+
+  /**
+   * Load and cache a MediaPipe LlmInference instance for a LiteRT model.
+   */
+  private async getMediaPipeInference(modelName: string): Promise<LlmInference> {
+    if (
+      LocalLLMProvider.mediaPipeInference &&
+      LocalLLMProvider.currentLiteRTModel === modelName
+    ) {
+      return LocalLLMProvider.mediaPipeInference
+    }
+
+    if (LocalLLMProvider.mediaPipeLoadingPromise) {
+      return LocalLLMProvider.mediaPipeLoadingPromise
+    }
+
+    LocalLLMProvider.mediaPipeLoadingPromise = this.loadMediaPipeInference(modelName)
+    try {
+      const inference = await LocalLLMProvider.mediaPipeLoadingPromise
+      LocalLLMProvider.mediaPipeInference = inference
+      LocalLLMProvider.currentLiteRTModel = modelName
+      return inference
+    } finally {
+      LocalLLMProvider.mediaPipeLoadingPromise = null
+    }
+  }
+
+  /**
+   * Initialise a MediaPipe GenAI LlmInference from a LiteRT .task file.
+   * MediaPipe's own WASM runtime supports the QAT 2-bit quantization that
+   * ONNX Runtime rejects.
+   *
+   * Download strategy (mirrors the reference HF space):
+   *   1. Check OPFS for a cached copy (validated by a companion _size file).
+   *   2. If missing/invalid, fetch from network and tee the body:
+   *      one branch → MediaPipe, the other → OPFS for future use.
+   *   3. Pipe the consumer branch through a TransformStream that counts bytes
+   *      and fires progressCallback on every chunk.
+   *   4. Pass the reader as `modelAssetBuffer` so MediaPipe streams it in.
+   */
+  private async loadMediaPipeInference(modelName: string): Promise<LlmInference> {
+    const taskUrl = LITERT_MODEL_REGISTRY[modelName]
+    if (!taskUrl) {
+      throw new Error(`No LiteRT .task URL registered for model "${modelName}"`)
+    }
+
+    const fileName = taskUrl.split('/').pop()!
+
+    LocalLLMProvider.progressCallback?.({ status: 'loading', progress: 0, modelName })
+    console.log(`[LOCAL-LLM] Loading LiteRT model "${modelName}" via MediaPipe GenAI`)
+
+    // ------------------------------------------------------------------
+    // 1. Resolve a ReadableStream — OPFS cache first, then network
+    // ------------------------------------------------------------------
+    let modelStream: ReadableStream<Uint8Array>
+    let contentLength = -1
+
+    const opfsRoot = await navigator.storage.getDirectory().catch(() => null)
+
+    if (opfsRoot) {
+      try {
+        const fileHandle = await opfsRoot.getFileHandle(fileName)
+        const sizeHandle = await opfsRoot.getFileHandle(`${fileName}_size`)
+        const file = await fileHandle.getFile()
+        const expectedSize = parseInt(await (await sizeHandle.getFile()).text(), 10)
+        if (file.size === expectedSize && expectedSize > 0) {
+          console.log('[LOCAL-LLM] LiteRT model served from OPFS cache')
+          modelStream = file.stream() as unknown as ReadableStream<Uint8Array>
+          contentLength = file.size
+        } else {
+          throw new Error('OPFS size mismatch — re-downloading')
+        }
+      } catch {
+        // Cache miss or corruption — fall through to network fetch
+        modelStream = await this.fetchLiteRTWithOPFSWrite(
+          taskUrl,
+          fileName,
+          opfsRoot,
+          (len) => { contentLength = len },
+        )
+      }
+    } else {
+      // OPFS unavailable (e.g. private browsing) — plain network fetch
+      const response = await fetch(taskUrl)
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to download LiteRT model: ${response.status} ${response.statusText}`)
+      }
+      contentLength = Number(response.headers.get('Content-Length')) || -1
+      modelStream = response.body
+    }
+
+    // ------------------------------------------------------------------
+    // 2. Wrap with a progress-reporting TransformStream
+    // ------------------------------------------------------------------
+    let bytesRead = 0
+    const progressTransform = new TransformStream<Uint8Array, Uint8Array>({
+      transform: (chunk, controller) => {
+        bytesRead += chunk.length
+        LocalLLMProvider.progressCallback?.({
+          status: 'downloading',
+          loaded: bytesRead,
+          total: contentLength > 0 ? contentLength : undefined,
+          progress:
+            contentLength > 0 ? Math.round((bytesRead / contentLength) * 100) : undefined,
+          modelName,
+        })
+        controller.enqueue(chunk)
+      },
+    })
+    const trackedStream = modelStream.pipeThrough(progressTransform)
+
+    // ------------------------------------------------------------------
+    // 3. Load via MediaPipe GenAI
+    // ------------------------------------------------------------------
+    const genaiFileset = await FilesetResolver.forGenAiTasks('/wasm/mediapipe-genai')
+
+    const inference = await LlmInference.createFromOptions(genaiFileset, {
+      baseOptions: { modelAssetBuffer: trackedStream.getReader() },
+      maxTokens: 2048,
+      topK: 40,
+      temperature: 0.7,
+      randomSeed: 101,
+    })
+
+    LocalLLMProvider.progressCallback?.({ status: 'ready', progress: 100, modelName })
+    return inference
+  }
+
+  /**
+   * Fetch a LiteRT .task file from the network, tee the body so that
+   * one branch is written to OPFS in the background while the other is
+   * returned to the caller for immediate consumption.
+   */
+  private async fetchLiteRTWithOPFSWrite(
+    url: string,
+    fileName: string,
+    opfsRoot: FileSystemDirectoryHandle,
+    onContentLength: (len: number) => void,
+  ): Promise<ReadableStream<Uint8Array>> {
+    // HEAD request to learn the expected size before streaming
+    let expectedSize = -1
+    try {
+      const head = await fetch(url, { method: 'HEAD' })
+      expectedSize = Number(head.headers.get('Content-Length'))
+      if (isNaN(expectedSize) || expectedSize <= 0) expectedSize = -1
+    } catch {
+      // best-effort
+    }
+    onContentLength(expectedSize)
+
+    console.log('[LOCAL-LLM] Fetching LiteRT model from network and caching to OPFS')
+    const response = await fetch(url)
+    if (!response.ok || !response.body) {
+      throw new Error(`Failed to download LiteRT model from ${url}: ${response.status} ${response.statusText}`)
+    }
+
+    // Tee: consumer stream → MediaPipe; cache stream → OPFS
+    const [streamForConsumer, streamForCache] = response.body.tee()
+
+    // Write to OPFS in the background (non-blocking)
+    ;(async () => {
+      try {
+        const fileHandle = await opfsRoot.getFileHandle(fileName, { create: true })
+        const writable = await fileHandle.createWritable()
+
+        // Count bytes through the cache branch so we know the exact written size
+        // without depending on Content-Length (which HuggingFace CDN may omit).
+        let bytesWritten = 0
+        const counter = new TransformStream<Uint8Array, Uint8Array>({
+          transform(chunk, controller) {
+            bytesWritten += chunk.length
+            controller.enqueue(chunk)
+          },
+        })
+        await streamForCache.pipeThrough(counter).pipeTo(writable)
+
+        // Write _size AFTER the model is fully written—it acts as a
+        // "write complete" flag. If the process is interrupted before this
+        // point the model file won't have a companion _size file and will
+        // be treated as a cache miss on the next load.
+        const sizeHandle = await opfsRoot.getFileHandle(`${fileName}_size`, { create: true })
+        const sw = await sizeHandle.createWritable()
+        await sw.write(new TextEncoder().encode(String(bytesWritten)))
+        await sw.close()
+
+        console.log(`[LOCAL-LLM] LiteRT model cached to OPFS as "${fileName}" (${bytesWritten} bytes)`)
+      } catch (err) {
+        console.error('[LOCAL-LLM] Failed to cache LiteRT model to OPFS:', err)
+        // Clean up partial files so the next load triggers a fresh download
+        try { await opfsRoot.removeEntry(fileName) } catch { /* ignore */ }
+        try { await opfsRoot.removeEntry(`${fileName}_size`) } catch { /* ignore */ }
+      }
+    })()
+
+    return streamForConsumer
+  }
+
+  /**
+   * Detect unsupported quantization bit-width errors from the WebGPU ONNX Runtime backend.
+   * The WebGPU GatherBlockQuantized kernel only supports 4-bit and 8-bit weights;
+   * models quantized to 2-bit (q2f16) will hit this at session-creation time.
+   * The fix is to retry with the WASM backend, which has no such restriction.
+   */
+  private static isQuantizationError(error: unknown): boolean {
+    const msg =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : String(error)
+    return (
+      msg.includes("bits_ == 4 || bits_ == 8") ||
+      msg.includes("'bits' must be 4 or 8") ||
+      msg.includes('GatherBlockQuantized')
+    )
+  }
+
+  /**
    * Detect memory allocation errors (e.g., ArrayBuffer too large for the browser).
    * This happens when a model's weight file exceeds the browser's memory limits.
    */
@@ -186,7 +472,14 @@ export class LocalLLMProvider implements LLMProviderInterface {
    */
   private static getDtypeForModel(
     modelName: string,
-  ): 'q4' | 'q4f16' | 'q8' | 'fp16' | 'fp32' {
+  ):
+    | 'q4'
+    | 'q4f16'
+    | 'q2f16'
+    | 'q8'
+    | 'fp16'
+    | 'fp32'
+    | Record<string, 'q2f16' | 'q4f16' | 'fp16' | 'fp32'> {
     const lower = modelName.toLowerCase()
 
     // ONNX-web models are pre-quantized for browser inference — always use q4f16
@@ -201,6 +494,17 @@ export class LocalLLMProvider implements LLMProviderInterface {
 
     // LFM2.5 (Liquid) — use q4f16 for smallest download (243MB)
     if (lower.includes('lfm')) {
+      return 'q4f16'
+    }
+
+    // Gemma 4 QAT mobile — use q4f16 (4-bit is the minimum ONNX Runtime supports;
+    // q2f16 causes a GatherBlockQuantized bits_ assertion in both WebGPU and WASM backends)
+    if (lower.includes('gemma') && lower.includes('qat') && lower.includes('mobile')) {
+      return 'q4f16'
+    }
+
+    // Gemma 4 (non-QAT) — use q4f16 quantization
+    if (lower.includes('gemma') && lower.includes('4') && lower.includes('e2b')) {
       return 'q4f16'
     }
 
@@ -248,7 +552,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
     const dtype = LocalLLMProvider.getDtypeForModel(modelName)
     const device = LocalLLMProvider.useWasmFallback ? 'wasm' : 'webgpu'
     console.log(
-      `[LOCAL-LLM] Loading model "${modelName}" with dtype: ${dtype}, device: ${device}`,
+      `[LOCAL-LLM] Loading model "${modelName}" with dtype: ${typeof dtype === 'string' ? dtype : JSON.stringify(dtype)}, device: ${device}`,
     )
 
     try {
@@ -304,6 +608,30 @@ export class LocalLLMProvider implements LLMProviderInterface {
         LocalLLMProvider.useWasmFallback = true
         return this.loadPipeline(modelName)
       }
+
+      // WebGPU ONNX Runtime only supports 4-bit and 8-bit quantization; q2f16 (2-bit)
+      // models will fail with a GatherBlockQuantized bits error. WASM handles all widths.
+      if (
+        !LocalLLMProvider.useWasmFallback &&
+        LocalLLMProvider.isQuantizationError(error)
+      ) {
+        console.warn(
+          `[LOCAL-LLM] WebGPU does not support 2-bit quantization for "${modelName}". ` +
+            'Retrying with WASM backend...',
+        )
+        LocalLLMProvider.useWasmFallback = true
+        return this.loadPipeline(modelName)
+      }
+
+      // Both backends exhausted — quantization width is unsupported everywhere
+      if (LocalLLMProvider.isQuantizationError(error)) {
+        throw new Error(
+          `Model "${modelName}" uses a quantization bit-width (e.g. 2-bit) that is not ` +
+            'supported by ONNX Runtime in this browser. Please choose a different model ' +
+            'or a variant with 4-bit or 8-bit quantization (e.g. a model ending in "-ONNX-web").',
+        )
+      }
+
       throw error
     }
   }
@@ -374,7 +702,25 @@ export class LocalLLMProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): Promise<LLMResponse> {
-    const generator = await this.getPipeline(config?.model)
+    const modelName = config?.model || LocalLLMProvider.DEFAULT_MODEL
+
+    // ---- MediaPipe / LiteRT path ----
+    if (LocalLLMProvider.isLiteRTModel(modelName)) {
+      const inference = await this.getMediaPipeInference(modelName)
+      const prompt = this.formatMessagesForLiteRT(messages)
+      const response = await inference.generateResponse(prompt)
+      return {
+        content: response.trim(),
+        usage: {
+          promptTokens: NaN,
+          completionTokens: response.length / 4,
+          totalTokens: NaN,
+        },
+      }
+    }
+
+    // ---- transformers.js / ONNX path ----
+    const generator = await this.getPipeline(modelName)
 
     // Format messages using the tokenizer's chat template (with attachment processing)
     const prompt = await this.formatMessages(messages, generator.tokenizer)
@@ -459,7 +805,45 @@ export class LocalLLMProvider implements LLMProviderInterface {
     messages: LLMMessage[],
     config?: Partial<LLMConfig>,
   ): AsyncIterableIterator<string> {
-    const generator = await this.getPipeline(config?.model)
+    const modelName = config?.model || LocalLLMProvider.DEFAULT_MODEL
+
+    // ---- MediaPipe / LiteRT path ----
+    if (LocalLLMProvider.isLiteRTModel(modelName)) {
+      const inference = await this.getMediaPipeInference(modelName)
+      const prompt = this.formatMessagesForLiteRT(messages)
+
+      const chunks: string[] = []
+      let chunkIndex = 0
+      let generationComplete = false
+
+      // Kick off generation; progressListener fires synchronously from WASM
+      const responsePromise = inference.generateResponse(
+        prompt,
+        (partial: string, done: boolean) => {
+          if (partial) chunks.push(partial)
+          if (done) generationComplete = true
+        },
+      )
+
+      // Yield chunks as they arrive from the callback
+      while (!generationComplete || chunkIndex < chunks.length) {
+        if (chunkIndex < chunks.length) {
+          yield chunks[chunkIndex++]
+        } else {
+          await new Promise<void>((resolve) => setTimeout(resolve, 10))
+        }
+      }
+      // Drain any final chunks that arrived in the last tick
+      while (chunkIndex < chunks.length) {
+        yield chunks[chunkIndex++]
+      }
+
+      await responsePromise
+      return
+    }
+
+    // ---- transformers.js / ONNX path ----
+    const generator = await this.getPipeline(modelName)
 
     // Format messages using the tokenizer's chat template (with attachment processing)
     const prompt = await this.formatMessages(messages, generator.tokenizer)
@@ -597,6 +981,7 @@ export class LocalLLMProvider implements LLMProviderInterface {
       // Fallback to default models list
       return [
         LocalLLMProvider.DEFAULT_MODEL,
+        'onnx-community/gemma-4-E2B-it-ONNX',
         'onnx-community/gemma-3-270m-it-ONNX',
         'onnx-community/granite-4.0-350m-ONNX-web',
         'onnx-community/Bonsai-1.7B-ONNX',
@@ -630,5 +1015,10 @@ export class LocalLLMProvider implements LLMProviderInterface {
     LocalLLMProvider.currentModel = null
     LocalLLMProvider.isLoading = false
     LocalLLMProvider.loadingPromise = null
+    // Also release any MediaPipe LiteRT inference instance
+    LocalLLMProvider.mediaPipeInference?.close()
+    LocalLLMProvider.mediaPipeInference = null
+    LocalLLMProvider.currentLiteRTModel = null
+    LocalLLMProvider.mediaPipeLoadingPromise = null
   }
 }

@@ -26,6 +26,7 @@ import { SyncPasswordModal } from '@/features/sync/components/SyncPasswordModal'
 import { ServiceWorkerUpdatePrompt } from '@/components/ServiceWorkerUpdatePrompt'
 import { AddLLMProviderModal } from '@/components/AddLLMProviderModal'
 import { I18nProvider, languageDirection } from '@/i18n'
+import { useEnterpriseBootstrap } from '@/features/auth/useEnterpriseBootstrap'
 
 // Expose sync debug tools in browser console
 ;(window as unknown as Record<string, unknown>).devsSync = {
@@ -192,6 +193,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
 
   // Auto-backup: automatically sync to local folder when data changes
   useAutoBackup()
+
+  // Enterprise spaces: bootstrap on login, sync on navigation
+  useEnterpriseBootstrap()
 
   // Privacy mode: sync state to service worker
   const effectiveSettings = useEffectiveSettings()

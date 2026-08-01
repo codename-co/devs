@@ -42,7 +42,7 @@ export const ComparisonHero = ({ title, subtitle }: ComparisonHeroProps) => {
         >
           <Button
             as={Link}
-            href={url('/')}
+            href={url('')}
             color="primary"
             size="lg"
             radius="full"

@@ -76,6 +76,7 @@ const DEVS_TO_MODELS_DEV_MAP: Record<LLMProvider, string | string[] | null> = {
   replicate: null,
   together: null,
   fal: null,
+  'devs-enterprise': null, // Enterprise proxy — models from Teams config allowlist
 }
 
 /**
@@ -143,7 +144,11 @@ const LOCAL_MODEL_CAPABILITY_PATTERNS: LocalModelCapabilityPattern[] = [
   { pattern: /^minicpm-v/i, capabilities: { vision: true } },
   { pattern: /^yi-vl/i, capabilities: { vision: true } },
 
-  // Gemma 3+ has vision
+  // Gemma 4 — multimodal (vision + audio), thinking-capable
+  { pattern: /^gemma4/i, capabilities: { vision: true, thinking: true } },
+  { pattern: /^gemma-4/i, capabilities: { vision: true, thinking: true } },
+
+  // Gemma 3 has vision
   { pattern: /^gemma3/i, capabilities: { vision: true, fast: true } },
   { pattern: /^gemma-3/i, capabilities: { vision: true, fast: true } },
 
@@ -403,6 +408,7 @@ const EMPTY_REGISTRY: ModelRegistry = {
   replicate: [],
   together: [],
   fal: [],
+  'devs-enterprise': [],
 }
 
 /**

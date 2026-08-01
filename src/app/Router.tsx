@@ -54,6 +54,10 @@ const OAuthCallbackPage = lazyNamed(
   () => import('@/pages/OAuth'),
   'OAuthCallbackPage',
 )
+const AuthCallbackPage = lazyNamed(
+  () => import('@/pages/AuthCallback'),
+  'AuthCallbackPage',
+)
 const TaskPage = lazyNamed(() => import('@/pages/Tasks/show'), 'TaskPage')
 const SessionPage = lazyNamed(() => import('@/pages/Session'), 'SessionPage')
 const LivePage = lazyNamed(() => import('@/features/live'), 'LivePage')
@@ -95,6 +99,19 @@ const CompareRomaPage = lazyNamed(() => import('@/pages/Compare'), 'CompareRomaP
 const CompareRunnerHPage = lazyNamed(() => import('@/pages/Compare'), 'CompareRunnerHPage')
 const CompareTracePage = lazyNamed(() => import('@/pages/Compare'), 'CompareTracePage')
 const CompareV7GoPage = lazyNamed(() => import('@/pages/Compare'), 'CompareV7GoPage')
+
+// Lazy-loaded admin dashboard (Teams mode only)
+const LazyAdminDashboard = lazy(() =>
+  import('@/features/auth/pages/AdminDashboardPage').then((m) => ({
+    default: m.AdminDashboardPage,
+  })),
+)
+
+const AdminDashboardRoute = () => (
+  <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><span className="text-default-400">Loading dashboard...</span></div>}>
+    <LazyAdminDashboard />
+  </Suspense>
+)
 
 // Redirect components for old paths → history tabs
 const LibraryRedirect = () => <Navigate to="../history" replace />
@@ -140,6 +157,7 @@ const routes = {
   'demo/timeline': TaskTimelineDemo,
   studio: StudioPage,
   'oauth/callback': OAuthCallbackPage,
+  'auth/callback': AuthCallbackPage,
   about: AboutPage,
   privacy: PrivacyPage,
   'session/:sessionId': SessionPage,
@@ -149,6 +167,7 @@ const routes = {
   'marketplace/new': NewExtensionPage,
   'marketplace/extensions/:extensionId/edit': ExtensionEditorPage,
   live: LivePage,
+  'admin/dashboard': AdminDashboardRoute,
   tour: TourPage,
   'tour/:videoId': TourVideoPage,
   compare: ComparePage,

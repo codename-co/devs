@@ -93,6 +93,9 @@ export const ko: I18n = {
   Traces: '추적',
   'Observe and analyze traces and metrics': '추적 및 메트릭 관찰 및 분석',
   Admin: '관리자',
+  'Sign in': '로그인',
+  'Sign out': '로그아웃',
+  Dashboard: '대시보드',
 
   // PromptArea
   'What are we working on?': '무언가 필요하신가요?',

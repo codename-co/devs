@@ -10,6 +10,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
+import { teamsLocalPlugin } from './ee/local-dev/vite-teams-plugin'
 import {
   defaultLang,
   type Lang,
@@ -144,16 +145,21 @@ export default defineConfig(({ mode }) => {
       createMpaPlugin({
         htmlMinify: true,
         pages,
+        rewrites: [
+          // Serve the SPA index for the Teams OIDC callback route
+          { from: /^\/auth\/callback/, to: '/index.html' },
+        ],
       }) as any,
       cacheVersionPlugin(),
       corsProxyPlugin(),
       // Unified proxy plugin for all OAuth/API routes
       // Proxy configuration is defined in src/features/connectors/providers/apps/index.ts
       oauthProxyPlugin(getProxyRoutes(env)),
+      teamsLocalPlugin(),
     ],
     optimizeDeps: {
       include: ['quickjs-emscripten'],
-      exclude: ['@jitl/quickjs-wasmfile-release-sync'],
+      exclude: ['@jitl/quickjs-wasmfile-release-sync', '@mediapipe/tasks-genai'],
     },
     assetsInclude: ['**/*.wasm'],
     resolve: {

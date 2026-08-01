@@ -1,0 +1,73 @@
+# =============================================================================
+# DEVS Teams — Local Development Stack
+# =============================================================================
+# Usage:
+#   docker compose -f compose.teams.yaml up -d
+#   docker compose -f compose.teams.yaml logs -f
+#   docker compose -f compose.teams.yaml down -v   (clean reset)
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — devs-teams audit projections, sessions, seats
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: devsteams
+      POSTGRES_USER: devs
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devs -d devsteams"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Keycloak — local OIDC provider (replaces Okta / Entra ID / Auth0)
+  # ---------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 9000
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./ee/local-dev/keycloak-realm.json:/opt/keycloak/data/import/devs-realm.json:ro
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # devs-teams — auth + API + Yjs sync hub
+  # ---------------------------------------------------------------------------
+  devs-teams:
+    build: ./ee/server
+    ports:
+      - "4444:4444"
+    environment:
+      DATABASE_URL: postgres://devs:secret@postgres:5432/devsteams
+      OIDC_ISSUER: http://localhost:9000/realms/devs
+      OIDC_INTERNAL_ISSUER: http://keycloak:9000/realms/devs
+      OIDC_CLIENT_ID: devs-client
+      OIDC_ADMIN_CLAIM: groups
+      OIDC_ADMIN_VALUE: devs-admin
+      ADMIN_EMAILS: alice@local.dev
+      LICENSE_KEY: dpro_local_dev_key
+      PLATFORM_URL: http://localhost:5555
+      LOG_LEVEL: debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata:

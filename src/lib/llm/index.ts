@@ -409,6 +409,7 @@ import {
   VertexAIProvider,
   ClaudeCodeProvider,
   GitHubCopilotProvider,
+  DevsEnterpriseProvider,
 } from './providers'
 import { aiSdkProvider } from './ai-sdk'
 
@@ -434,3 +435,4 @@ LLMService.registerProvider('local', new LocalLLMProvider())
 LLMService.registerProvider('vertex-ai', new VertexAIProvider())
 LLMService.registerProvider('claude-code', new ClaudeCodeProvider())
 LLMService.registerProvider('github-copilot', new GitHubCopilotProvider())
+LLMService.registerProvider('devs-enterprise', new DevsEnterpriseProvider())
