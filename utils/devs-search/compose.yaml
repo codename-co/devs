@@ -1,0 +1,23 @@
+services:
+  searxng:
+    image: searxng/searxng:latest
+    container_name: devs-search
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+    environment:
+      - SEARXNG_BASE_URL=https://devs.new/api/search
+    restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.search.rule: Host(`devs.new`) && PathPrefix(`/api/search`)
+      traefik.http.routers.search.entrypoints: web
+      traefik.http.middlewares.search-strip.stripprefix.prefixes: /api/search
+      traefik.http.routers.search.middlewares: search-strip
+      traefik.http.services.search.loadbalancer.server.port: 8080
+    networks:
+      - external
+
+networks:
+  external:
+    external: true
+

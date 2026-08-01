@@ -1,0 +1,9 @@
+services:
+  searxng:
+    ports:
+      - "8888:8080"
+    networks: []
+
+networks:
+  external:
+    name: devs-search-local

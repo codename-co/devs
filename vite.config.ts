@@ -232,6 +232,13 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: true,
       // All proxy routes are handled by the oauthProxyPlugin above
+      proxy: {
+        '/api/search': {
+          target: 'http://localhost:8888',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/api\/search/, ''),
+        },
+      },
     },
     preview: {
       port: 3000,

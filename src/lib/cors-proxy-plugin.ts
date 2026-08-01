@@ -131,7 +131,7 @@ export function corsProxyPlugin(): Plugin {
           // Forward specific headers from the original request
           const forwardHeaders: Record<string, string> = {
             'User-Agent':
-              'Mozilla/5.0 (compatible; DEVS-Proxy/1.0; +https://devs.new)',
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
           }
 
           // Forward Content-Type if present

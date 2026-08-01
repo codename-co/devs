@@ -1,0 +1,22 @@
+use_default_settings: true
+
+general:
+  instance_name: "DEVS Search"
+  debug: false
+
+search:
+  safe_search: 0
+  default_lang: "auto"
+  formats:
+    - html
+    - json
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "change-me-in-production"
+  limiter: false
+
+engines:
+  - name: wikidata
+    disabled: true
