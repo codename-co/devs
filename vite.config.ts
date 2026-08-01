@@ -12,11 +12,15 @@ import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
 // Optional enterprise plugin (not present in open-source builds)
-const teamsLocalPlugin: () => Plugin = existsSync(
-  resolve(import.meta.dirname, 'ee/local-dev/vite-teams-plugin.ts'),
-)
-  ? (await import('./ee/local-dev/vite-teams-plugin')).teamsLocalPlugin
-  : () => ({ name: 'teams-local-noop' }) as Plugin
+let teamsLocalPlugin: () => Plugin = () => ({ name: 'teams-local-noop' }) as Plugin
+try {
+  if (existsSync(resolve(import.meta.dirname, 'ee/local-dev/vite-teams-plugin.ts'))) {
+    const mod = await import(resolve(import.meta.dirname, 'ee/local-dev/vite-teams-plugin.ts'))
+    teamsLocalPlugin = mod.teamsLocalPlugin
+  }
+} catch {
+  // Enterprise plugin not available — skip
+}
 import {
   defaultLang,
   type Lang,
