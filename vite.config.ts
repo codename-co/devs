@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 // import basicSsl from '@vitejs/plugin-basic-ssl'
 import { resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { readFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import { globSync } from 'glob'
@@ -10,7 +11,12 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { createMpaPlugin, type Page } from 'vite-plugin-virtual-mpa'
 
 import { PRODUCT } from './src/config/product'
-import { teamsLocalPlugin } from './ee/local-dev/vite-teams-plugin'
+// Optional enterprise plugin (not present in open-source builds)
+const teamsLocalPlugin: () => Plugin = existsSync(
+  resolve(import.meta.dirname, 'ee/local-dev/vite-teams-plugin.ts'),
+)
+  ? (await import('./ee/local-dev/vite-teams-plugin')).teamsLocalPlugin
+  : () => ({ name: 'teams-local-noop' }) as Plugin
 import {
   defaultLang,
   type Lang,

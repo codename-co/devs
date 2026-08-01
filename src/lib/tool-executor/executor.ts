@@ -1082,6 +1082,31 @@ export function unregisterResearchTools(): void {
 }
 
 // ============================================================================
+// Web Search Tools Registration
+// ============================================================================
+
+/**
+ * Register web search tools (DuckDuckGo) with the default registry.
+ */
+export function registerWebTools(): void {
+  registerCategoryWithLegacy('web', defaultRegistry)
+}
+
+/**
+ * Check if web search tools are registered.
+ */
+export function areWebToolsRegistered(): boolean {
+  return isCategoryRegisteredInLegacy('web', defaultRegistry)
+}
+
+/**
+ * Unregister web search tools from the default registry.
+ */
+export function unregisterWebTools(): void {
+  unregisterCategoryFromLegacy('web', defaultRegistry)
+}
+
+// ============================================================================
 // Utility Tools Registration
 // ============================================================================
 

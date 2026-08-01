@@ -32,6 +32,8 @@ import {
   areCodeToolsRegistered,
   registerResearchTools,
   areResearchToolsRegistered,
+  registerWebTools,
+  areWebToolsRegistered,
   registerSkillTools,
   areSkillToolsRegistered,
   registerConnectorTools,
@@ -64,6 +66,7 @@ import {
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
 } from '@/tools/plugins/arxiv'
+import { WEB_SEARCH_TOOL_DEFINITION } from '@/tools/plugins/web-search'
 import { SKILL_TOOL_DEFINITIONS } from '@/tools/plugins/skill-tools'
 import { ARTIFACT_TOOL_DEFINITIONS } from '@/lib/artifact-tools'
 import { getEffectiveSettings } from '@/stores/userStore'
@@ -169,6 +172,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
   if (!areMathToolsRegistered()) registerMathTools()
   if (!areCodeToolsRegistered()) registerCodeTools()
   if (!areResearchToolsRegistered()) registerResearchTools()
+  if (!areWebToolsRegistered()) registerWebTools()
   if (!areSkillToolsRegistered()) registerSkillTools()
   if (!areConnectorToolsRegistered()) registerConnectorTools()
   if (!arePresentationToolsRegistered()) registerPresentationTools()
@@ -189,6 +193,7 @@ async function collectTools(scope?: AgentScope): Promise<ToolDefinition[]> {
     WIKIDATA_SPARQL_TOOL_DEFINITION,
     ARXIV_SEARCH_TOOL_DEFINITION,
     ARXIV_PAPER_TOOL_DEFINITION,
+    WEB_SEARCH_TOOL_DEFINITION,
     ...Object.values(SKILL_TOOL_DEFINITIONS),
     ...Object.values(ARTIFACT_TOOL_DEFINITIONS),
   ]
@@ -310,7 +315,7 @@ async function buildSystemPrompt(
   parts.push(taskContext)
 
   parts.push(
-    `\n\n## Execution Instructions\nYou are an autonomous agent executing a task. You have access to tools — use them proactively.\n\n**Research tools:** When the task involves factual questions, historical dates, names, biographical details, or any verifiable information, you MUST use the available research tools (wikipedia_search, wikipedia_article, wikidata_search, arxiv_search, etc.) to look up accurate information rather than relying on your training data alone. Search first, answer second.\n\n**Other tools:** Use knowledge tools to search the user's knowledge base, math tools for calculations, and code tools when code execution is needed.\n\nWhen you have fully addressed all requirements, provide your final deliverable. Be thorough and ensure all requirements are addressed.`,
+    `\n\n## Execution Instructions\nYou are an autonomous agent executing a task. You have access to tools — use them proactively.\n\n**Research tools:** When the task involves factual questions, historical dates, names, biographical details, or any verifiable information, you MUST use the available research tools (web_search, wikipedia_search, wikipedia_article, wikidata_search, arxiv_search, etc.) to look up accurate information rather than relying on your training data alone. Search first, answer second.\n\n**Other tools:** Use knowledge tools to search the user's knowledge base, math tools for calculations, and code tools when code execution is needed.\n\nWhen you have fully addressed all requirements, provide your final deliverable. Be thorough and ensure all requirements are addressed.`,
   )
 
   return parts.join('\n')

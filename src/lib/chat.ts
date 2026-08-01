@@ -70,6 +70,8 @@ import {
   arePresentationToolsRegistered,
   registerResearchTools,
   areResearchToolsRegistered,
+  registerWebTools,
+  areWebToolsRegistered,
   registerSkillTools,
   areSkillToolsRegistered,
   registerOrchestrationTools,
@@ -98,6 +100,7 @@ import {
   ARXIV_SEARCH_TOOL_DEFINITION,
   ARXIV_PAPER_TOOL_DEFINITION,
 } from '@/tools/plugins/arxiv'
+import { WEB_SEARCH_TOOL_DEFINITION } from '@/tools/plugins/web-search'
 import { SKILL_TOOL_DEFINITIONS } from '@/tools/plugins/skill-tools'
 import { DELEGATE_TOOL_DEFINITION } from '@/tools/plugins/delegate'
 import { listDelegatableAgents } from '@/lib/subagent'
@@ -248,6 +251,8 @@ function getAgentToolDefinitions(_agent: Agent): ToolDefinition[] {
     WIKIDATA_SPARQL_TOOL_DEFINITION,
     ARXIV_SEARCH_TOOL_DEFINITION,
     ARXIV_PAPER_TOOL_DEFINITION,
+    // Web search
+    WEB_SEARCH_TOOL_DEFINITION,
   ]
 
   // Add skill tools only if there are enabled skills
@@ -518,6 +523,11 @@ async function executeToolCalls(
   // Ensure research tools are registered
   if (!areResearchToolsRegistered()) {
     registerResearchTools()
+  }
+
+  // Ensure web search tools are registered
+  if (!areWebToolsRegistered()) {
+    registerWebTools()
   }
 
   // Ensure skill tools are registered
@@ -823,6 +833,8 @@ ${connectorBlocks}`
       pinnedContext,
       // Add citation instructions if not already included via buildAgentInstructions
       !hasKnowledgeItems ? CITATION_INSTRUCTIONS : '',
+      // Tool usage guidance
+      'You have access to tools — use them proactively. When the user asks to search the internet, look up current information, weather, news, or any real-time data, you MUST use the `web_search` tool. For factual/encyclopedic questions, use `wikipedia_search` or `arxiv_search`. Never claim you cannot access the internet when you have the `web_search` tool available.',
       `ALWAYS respond in ${languages[lang]} as this is the user's language.`,
     ]
 

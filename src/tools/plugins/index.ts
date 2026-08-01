@@ -100,6 +100,18 @@ export type {
 export { textOcrPlugin, TEXT_OCR_TOOL_DEFINITION } from './text-ocr'
 export type { TextOcrParams, TextOcrResult, TextOcrError } from './text-ocr'
 
+// Web Search tools
+export {
+  webSearchPlugin,
+  WEB_SEARCH_TOOL_DEFINITION,
+} from './web-search'
+export type {
+  WebSearchParams,
+  WebSearchResult,
+  WebSearchResponse,
+  WebSearchError,
+} from './web-search'
+
 // Skill tools
 export {
   activateSkillPlugin,
@@ -147,6 +159,7 @@ import {
 } from './wikidata'
 import { arxivSearchPlugin, arxivPaperPlugin } from './arxiv'
 import { textOcrPlugin } from './text-ocr'
+import { webSearchPlugin } from './web-search'
 import {
   activateSkillPlugin,
   readSkillFilePlugin,
@@ -190,6 +203,8 @@ export const corePlugins: ToolPlugin<any, any>[] = [
   arxivPaperPlugin,
   // Utility
   textOcrPlugin,
+  // Web Search
+  webSearchPlugin,
   // Agent Skills
   activateSkillPlugin,
   readSkillFilePlugin,
@@ -239,6 +254,7 @@ export const pluginsByCategory = {
     arxivPaperPlugin,
   ],
   utility: [textOcrPlugin],
+  web: [webSearchPlugin],
   skill: [activateSkillPlugin, readSkillFilePlugin, runSkillScriptPlugin],
   artifact: [
     writeArtifactPlugin,

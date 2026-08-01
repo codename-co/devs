@@ -789,6 +789,13 @@ export class VertexAIProvider implements LLMProviderInterface {
       requestBody.tools = this.convertToolsToGeminiFormat(config.tools)
     }
 
+    // Enable Google Search grounding for Gemini models
+    if (config?.enableWebSearch) {
+      const tools = (requestBody.tools as any[]) || []
+      tools.push({ googleSearch: {} })
+      requestBody.tools = tools
+    }
+
     const response = await fetch(
       `${endpoint}/publishers/google/models/${model}:generateContent`,
       {
@@ -904,6 +911,13 @@ export class VertexAIProvider implements LLMProviderInterface {
     // Add tools if provided (convert to Gemini format)
     if (config?.tools && config.tools.length > 0) {
       requestBody.tools = this.convertToolsToGeminiFormat(config.tools)
+    }
+
+    // Enable Google Search grounding for Gemini models
+    if (config?.enableWebSearch) {
+      const tools = (requestBody.tools as any[]) || []
+      tools.push({ googleSearch: {} })
+      requestBody.tools = tools
     }
 
     const response = await fetch(

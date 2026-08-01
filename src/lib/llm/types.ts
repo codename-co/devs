@@ -297,6 +297,7 @@ export interface LLMConfigWithTools {
    *
    * Supported providers:
    * - Google Gemini: Uses Google Search grounding
+   * - Vertex AI (Gemini models): Uses Google Search grounding
    * - Anthropic Claude: Uses web_search tool
    *
    * @default false
