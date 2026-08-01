@@ -19,6 +19,7 @@ import type {
   ToolDefinition,
   ToolChoice,
   FinishReason,
+  GroundingMetadata,
 } from '../types'
 import { stripModelPrefix } from '../types'
 
@@ -58,6 +59,14 @@ export interface AiSdkBinding {
   providerOptions?(
     config: FullConfig,
   ): Record<string, Record<string, unknown>> | undefined
+  /**
+   * Provider-executed (hosted) tools to merge into the request's tool set —
+   * e.g. Anthropic's native `web_search` tool when `enableWebSearch` is set.
+   * These run server-side on the provider; DEVS never executes them itself.
+   */
+  providerTools?(
+    config: FullConfig,
+  ): Promise<ToolSet | undefined> | ToolSet | undefined
   /** Validate an API key / endpoint (thin GET). Omitted ⇒ always valid. */
   validateApiKey?(apiKey: string, baseUrl?: string): Promise<boolean>
   /** List models live from the provider (thin GET). Omitted ⇒ `[]`. */
@@ -108,21 +117,47 @@ function toAiToolChoice(
   return undefined
 }
 
-/** Map an AI SDK tool-call → the canonical OpenAI-style ToolCall. */
-function toCanonicalToolCall(tc: {
-  toolCallId: string
-  toolName: string
-  input: unknown
-}): ToolCall {
-  return {
+/** Map an AI SDK tool-call → the canonical OpenAI-style ToolCall. Filters
+ *  out provider-executed calls (e.g. Anthropic's native web_search): those
+ *  run server-side and must not be surfaced to DEVS' own tool-execution
+ *  loop. */
+function toCanonicalToolCalls(
+  calls:
+    | Array<{
+        toolCallId: string
+        toolName: string
+        input: unknown
+        providerExecuted?: boolean
+      }>
+    | undefined,
+): ToolCall[] | undefined {
+  const clientCalls = calls?.filter((tc) => !tc.providerExecuted)
+  if (!clientCalls || clientCalls.length === 0) return undefined
+  return clientCalls.map((tc) => ({
     id: tc.toolCallId,
     type: 'function',
     function: {
       name: tc.toolName,
       arguments:
-        typeof tc.input === 'string' ? tc.input : JSON.stringify(tc.input ?? {}),
+        typeof tc.input === 'string'
+          ? tc.input
+          : JSON.stringify(tc.input ?? {}),
     },
-  }
+  }))
+}
+
+/** Map AI SDK `sources` (unified across providers' web search / grounding) →
+ *  the canonical {@link GroundingMetadata}. */
+function toGroundingMetadata(
+  sources:
+    | Array<{ sourceType: string; url?: string; title?: string }>
+    | undefined,
+): GroundingMetadata | undefined {
+  const webResults = (sources ?? [])
+    .filter((s) => s.sourceType === 'url' && s.url)
+    .map((s) => ({ title: s.title || s.url!, url: s.url! }))
+  if (webResults.length === 0) return undefined
+  return { isGrounded: true, webResults }
 }
 
 /**
@@ -184,12 +219,25 @@ export class AiSdkProvider implements LLMProviderInterface {
     return { ai, binding, model }
   }
 
+  /** Merge DEVS' client tool definitions with the binding's provider-executed
+   *  (hosted) tools, e.g. Anthropic's native `web_search`. */
+  private async tools(
+    ai: typeof import('ai'),
+    binding: AiSdkBinding,
+    config?: FullConfig,
+  ): Promise<ToolSet | undefined> {
+    const definedTools = toAiTools(config?.tools, ai.tool, ai.jsonSchema)
+    const providerTools = await binding.providerTools?.(config ?? {})
+    if (!definedTools && !providerTools) return undefined
+    return { ...definedTools, ...providerTools }
+  }
+
   async chat(
     messages: LLMMessage[],
     config?: FullConfig,
   ): Promise<LLMResponseWithTools> {
     const { ai, binding, model } = await this.build(config)
-    const tools = toAiTools(config?.tools, ai.tool, ai.jsonSchema)
+    const tools = await this.tools(ai, binding, config)
     const providerOptions = binding.providerOptions?.(config ?? {})
 
     const result = await ai.generateText({
@@ -198,19 +246,27 @@ export class AiSdkProvider implements LLMProviderInterface {
       allowSystemInMessages: true,
       temperature: config?.temperature ?? 0.7,
       ...(config?.maxTokens ? { maxOutputTokens: config.maxTokens } : {}),
-      ...(tools ? { tools, toolChoice: toAiToolChoice(config?.tool_choice) } : {}),
+      ...(tools
+        ? { tools, toolChoice: toAiToolChoice(config?.tool_choice) }
+        : {}),
       ...(providerOptions
         ? { providerOptions: providerOptions as ProviderOptions }
         : {}),
       abortSignal: config?.signal,
     })
 
-    const toolCalls = result.toolCalls?.map(toCanonicalToolCall)
+    const toolCalls = toCanonicalToolCalls(result.toolCalls)
+    const groundingMetadata = toGroundingMetadata(result.sources)
+    // A provider-executed web search doesn't need a client round-trip: if
+    // every tool call was filtered out as provider-executed, the turn is done.
+    const finishReason = mapFinishReason(result.finishReason)
     return {
       content: result.text ?? '',
       ...(result.reasoningText ? { thinking: result.reasoningText } : {}),
-      tool_calls: toolCalls && toolCalls.length > 0 ? toolCalls : undefined,
-      finish_reason: mapFinishReason(result.finishReason),
+      tool_calls: toolCalls,
+      ...(groundingMetadata ? { groundingMetadata } : {}),
+      finish_reason:
+        finishReason === 'tool_calls' && !toolCalls ? 'stop' : finishReason,
       usage: result.usage
         ? {
             promptTokens: result.usage.inputTokens ?? 0,
@@ -226,7 +282,7 @@ export class AiSdkProvider implements LLMProviderInterface {
     config?: FullConfig,
   ): AsyncIterableIterator<string> {
     const { ai, binding, model } = await this.build(config)
-    const tools = toAiTools(config?.tools, ai.tool, ai.jsonSchema)
+    const tools = await this.tools(ai, binding, config)
     const providerOptions = binding.providerOptions?.(config ?? {})
 
     const result = ai.streamText({
@@ -235,7 +291,9 @@ export class AiSdkProvider implements LLMProviderInterface {
       allowSystemInMessages: true,
       temperature: config?.temperature ?? 0.7,
       ...(config?.maxTokens ? { maxOutputTokens: config.maxTokens } : {}),
-      ...(tools ? { tools, toolChoice: toAiToolChoice(config?.tool_choice) } : {}),
+      ...(tools
+        ? { tools, toolChoice: toAiToolChoice(config?.tool_choice) }
+        : {}),
       ...(providerOptions
         ? { providerOptions: providerOptions as ProviderOptions }
         : {}),
@@ -246,9 +304,17 @@ export class AiSdkProvider implements LLMProviderInterface {
       if (delta) yield delta
     }
 
+    // Grounding metadata (web search sources) is flushed before tool calls —
+    // mirrors the legacy Google provider's stream ordering, which
+    // `parseToolCallsFromStream` relies on.
+    const groundingMetadata = toGroundingMetadata(await result.sources)
+    if (groundingMetadata) {
+      yield `\n__GROUNDING_METADATA__${JSON.stringify(groundingMetadata)}`
+    }
+
     // Preserve the legacy streaming protocol: tool calls are flushed at the end
     // as a `__TOOL_CALLS__`-prefixed JSON marker (parsed by the agent loop).
-    const toolCalls = (await result.toolCalls)?.map(toCanonicalToolCall)
+    const toolCalls = toCanonicalToolCalls(await result.toolCalls)
     if (toolCalls && toolCalls.length > 0) {
       yield `\n__TOOL_CALLS__${JSON.stringify(toolCalls)}`
     }
