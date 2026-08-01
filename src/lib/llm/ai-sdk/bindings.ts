@@ -21,7 +21,10 @@ function bearer(apiKey?: string): Record<string, string> {
 }
 
 /** Validate a key against an OpenAI-style `GET {base}/models`. */
-async function openAiStyleValidate(base: string, apiKey?: string): Promise<boolean> {
+async function openAiStyleValidate(
+  base: string,
+  apiKey?: string,
+): Promise<boolean> {
   try {
     const res = await fetch(`${base}/models`, { headers: bearer(apiKey) })
     return res.ok
@@ -31,7 +34,10 @@ async function openAiStyleValidate(base: string, apiKey?: string): Promise<boole
 }
 
 /** List models from an OpenAI-style `GET {base}/models` (`data[].id`). */
-async function openAiStyleList(base: string, apiKey?: string): Promise<string[]> {
+async function openAiStyleList(
+  base: string,
+  apiKey?: string,
+): Promise<string[]> {
   try {
     const res = await fetch(`${base}/models`, { headers: bearer(apiKey) })
     if (!res.ok) return []
@@ -125,6 +131,14 @@ export const anthropicBinding: AiSdkBinding = {
     }
     if (config.effort) anthropic.effort = config.effort
     return Object.keys(anthropic).length ? { anthropic } : undefined
+  },
+  async providerTools(config: FullConfig) {
+    if (!config.enableWebSearch) return undefined
+    // Native `web_search_20250305` server tool: Anthropic runs the search
+    // itself and folds the results back into the same turn, so this never
+    // needs DEVS' own tool-execution loop (filtered out via `providerExecuted`).
+    const { anthropic } = await import('@ai-sdk/anthropic')
+    return { web_search: anthropic.tools.webSearch_20250305({ maxUses: 5 }) }
   },
   async validateApiKey(apiKey) {
     // Validate on the endpoint the key is actually used with (`/v1/messages`,
@@ -224,7 +238,9 @@ export function makeCompatBinding(opts: CompatOptions): AiSdkBinding {
     defaultModel: opts.defaultModel,
     async createModel(config: AiSdkModelConfig) {
       const baseURL = resolveNormalized(config)
-      const { createOpenAICompatible } = await import('@ai-sdk/openai-compatible')
+      const { createOpenAICompatible } = await import(
+        '@ai-sdk/openai-compatible'
+      )
       const provider = createOpenAICompatible({
         name: opts.name,
         baseURL,
@@ -271,7 +287,9 @@ export const ollamaBinding = makeCompatBinding({
   resolveBase: (c) => c.baseUrl || OLLAMA_DEFAULT_HOST,
   // Ollama lists installed models via its native /api/tags endpoint.
   list: async (config) => {
-    const host = trimTrailingSlash(ensureAbsolute(config?.baseUrl || OLLAMA_DEFAULT_HOST))
+    const host = trimTrailingSlash(
+      ensureAbsolute(config?.baseUrl || OLLAMA_DEFAULT_HOST),
+    )
     try {
       const res = await fetch(`${host}/api/tags`)
       if (!res.ok) return []
@@ -284,7 +302,8 @@ export const ollamaBinding = makeCompatBinding({
   validate: async (apiKey, baseUrl) => {
     const host = trimTrailingSlash(
       ensureAbsolute(
-        baseUrl || (apiKey && apiKey !== 'ollama-no-key' ? apiKey : OLLAMA_DEFAULT_HOST),
+        baseUrl ||
+          (apiKey && apiKey !== 'ollama-no-key' ? apiKey : OLLAMA_DEFAULT_HOST),
       ),
     )
     try {
