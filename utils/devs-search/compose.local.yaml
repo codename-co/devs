@@ -1,0 +1,22 @@
+# Local development only — NOT deployed (excluded from `make search-sync`).
+#
+# Deliberately NOT named `compose.override.yaml`: Docker Compose auto-loads that
+# filename whenever it sits next to `compose.yaml`. A stale copy left on the
+# production host would silently move SearXNG onto the local-only network below,
+# so the container would start and look healthy while devs-proxy could never
+# resolve it. Requiring an explicit `-f` makes that failure impossible:
+#
+#   docker compose -f compose.yaml -f compose.local.yaml up -d
+#
+# In production `external` is a pre-existing network shared with devs-proxy,
+# which reaches SearXNG over it. Locally that network does not exist, so it is
+# created on demand and SearXNG is published on a port for the Vite dev proxy.
+services:
+  searxng:
+    ports:
+      - '8888:8080'
+
+networks:
+  external:
+    name: devs-search-local
+    external: false

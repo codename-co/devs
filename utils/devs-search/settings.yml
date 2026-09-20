@@ -1,4 +1,17 @@
-use_default_settings: true
+use_default_settings:
+  engines:
+    # `remove` drops an engine entirely. A plain `disabled: true` still runs the
+    # engine's init at startup, which is what produced the startup noise these
+    # entries eliminate — noise that otherwise obscures real faults when
+    # reading `docker logs devs-search` during an incident.
+    remove:
+      # Wikidata's SPARQL endpoint returns 403 to self-hosted instances, which
+      # made every search fail.
+      - wikidata
+      # Tor hidden-service engines. Without a Tor proxy both fail to register
+      # on every boot ("can't register engine (loading engine failed)").
+      - ahmia
+      - torch
 
 general:
   instance_name: "DEVS Search"
@@ -14,9 +27,6 @@ search:
 server:
   port: 8080
   bind_address: "0.0.0.0"
+  # Overridden at runtime by the SEARXNG_SECRET env var (see compose.yaml).
   secret_key: "change-me-in-production"
   limiter: false
-
-engines:
-  - name: wikidata
-    disabled: true

@@ -3,6 +3,12 @@ services:
     build:
       context: .
     restart: unless-stopped
+    environment:
+      # SearXNG (utils/devs-search) on the shared `external` network.
+      # Targets the container_name, which Docker's embedded DNS always
+      # resolves — unlike a compose service alias, which depends on how the
+      # other project was brought up.
+      - SEARXNG_URL=${SEARXNG_URL:-http://devs-search:8080}
     labels:
       traefik.enable: true
       traefik.http.routers.proxy.rule: Host(`proxy.devs.new`)

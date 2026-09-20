@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdir, writeFile, readFile } from 'node:fs/promises'
+import { readdir, writeFile, readFile, mkdir, copyFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse as parseYAML } from 'yaml'
@@ -7,6 +7,68 @@ import { parse as parseYAML } from 'yaml'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const agentsDir = join(__dirname, '../../public/agents')
 const manifestPath = join(agentsDir, 'manifest.json')
+
+const wasmSrcDir = join(
+  __dirname,
+  '../../node_modules/@mediapipe/tasks-genai/wasm',
+)
+const wasmDestDir = join(__dirname, '../../public/wasm/mediapipe-genai')
+const wasmStampPath = join(wasmDestDir, '.version')
+
+/**
+ * Mirror the MediaPipe GenAI WASM runtime into public/ so the local (WebGPU)
+ * provider can fetch it at `/wasm/mediapipe-genai` — see
+ * `FilesetResolver.forGenAiTasks()` in src/lib/llm/providers/local.ts.
+ *
+ * These ~76 MB of binaries ship inside the `@mediapipe/tasks-genai` package, so
+ * they are a build artifact of a declared dependency, not source. Copying them
+ * here keeps them out of git history (where their size would be permanent) and
+ * guarantees they always match the installed version instead of silently
+ * drifting after an upgrade.
+ */
+async function syncMediaPipeWasm() {
+  let version
+  try {
+    const pkg = await readFile(join(wasmSrcDir, '../package.json'), 'utf8')
+    version = JSON.parse(pkg).version
+  } catch {
+    console.warn(
+      'Skipping MediaPipe WASM sync: @mediapipe/tasks-genai is not installed.',
+    )
+    return
+  }
+
+  try {
+    const files = (await readdir(wasmSrcDir)).filter(
+      (file) => file.endsWith('.wasm') || file.endsWith('.js'),
+    )
+
+    // The copy is ~76 MB, so skip it when the mirror already matches.
+    let stamp = null
+    try {
+      stamp = (await readFile(wasmStampPath, 'utf8')).trim()
+    } catch {
+      // No stamp yet — fall through and copy.
+    }
+    if (stamp === version) {
+      const present = new Set(await readdir(wasmDestDir))
+      if (files.every((file) => present.has(file))) return
+    }
+
+    await mkdir(wasmDestDir, { recursive: true })
+    for (const file of files) {
+      await copyFile(join(wasmSrcDir, file), join(wasmDestDir, file))
+    }
+    await writeFile(wasmStampPath, `${version}\n`)
+
+    console.log(
+      `Synced ${files.length} MediaPipe GenAI WASM files (v${version}).`,
+    )
+  } catch (error) {
+    console.error('Error syncing MediaPipe WASM files:', error)
+    process.exit(1)
+  }
+}
 
 async function convertYamlToJson(yamlFilePath, jsonFilePath) {
   try {
@@ -158,3 +220,4 @@ async function generateExtensionsManifest() {
 generateAgentsManifest()
 generateMethodologiesManifest()
 generateExtensionsManifest()
+syncMediaPipeWasm()

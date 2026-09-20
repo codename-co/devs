@@ -388,38 +388,81 @@ export function parseToolCallsFromStream(response: string): {
   let toolCalls: ToolCall[] = []
   let groundingMetadata: GroundingMetadata | undefined
 
-  // Extract grounding metadata FIRST (appears at end of stream from Google provider)
   const groundingMarker = '__GROUNDING_METADATA__'
-  const groundingIndex = content.indexOf(groundingMarker)
-  if (groundingIndex !== -1) {
-    const groundingJson = content.substring(
-      groundingIndex + groundingMarker.length,
-    )
-    content = content.substring(0, groundingIndex)
+  const toolCallMarker = '__TOOL_CALLS__'
+  const thinkingMarker = '__THINKING_DELTA__'
+  const streamMarkers = [groundingMarker, toolCallMarker, thinkingMarker]
+  const markerRanges: Array<{ start: number; end: number }> = []
+
+  const findNextMarkerIndex = (fromIndex: number): number | undefined => {
+    let nextMarkerIndex: number | undefined
+
+    for (const marker of streamMarkers) {
+      const markerIndex = response.indexOf(marker, fromIndex)
+      if (
+        markerIndex !== -1 &&
+        (nextMarkerIndex === undefined || markerIndex < nextMarkerIndex)
+      ) {
+        nextMarkerIndex = markerIndex
+      }
+    }
+
+    return nextMarkerIndex
+  }
+
+  const extractMarkerPayload = (
+    marker: string,
+  ): { payload: string; start: number; end: number } | undefined => {
+    const markerIndex = response.indexOf(marker)
+    if (markerIndex === -1) return undefined
+
+    const payloadStart = markerIndex + marker.length
+    const payloadEnd = findNextMarkerIndex(payloadStart) ?? response.length
+
+    return {
+      payload: response.substring(payloadStart, payloadEnd),
+      start: markerIndex,
+      end: payloadEnd,
+    }
+  }
+
+  const groundingPayload = extractMarkerPayload(groundingMarker)
+  if (groundingPayload) {
+    markerRanges.push({
+      start: groundingPayload.start,
+      end: groundingPayload.end,
+    })
     try {
-      groundingMetadata = JSON.parse(groundingJson) as GroundingMetadata
+      groundingMetadata = JSON.parse(
+        groundingPayload.payload,
+      ) as GroundingMetadata
     } catch (error) {
       console.error('Failed to parse grounding metadata from stream:', error)
     }
   }
 
-  // Extract tool calls SECOND (appears at end of stream)
-  const toolCallMarker = '__TOOL_CALLS__'
-  const markerIndex = content.indexOf(toolCallMarker)
-  if (markerIndex !== -1) {
-    const toolCallsJson = content.substring(markerIndex + toolCallMarker.length)
-    content = content.substring(0, markerIndex)
+  const toolCallPayload = extractMarkerPayload(toolCallMarker)
+  if (toolCallPayload) {
+    markerRanges.push({ start: toolCallPayload.start, end: toolCallPayload.end })
     try {
-      toolCalls = JSON.parse(toolCallsJson) as ToolCall[]
+      toolCalls = JSON.parse(toolCallPayload.payload) as ToolCall[]
     } catch (error) {
       console.error('Failed to parse tool calls from stream:', error)
     }
   }
 
+  content = markerRanges
+    .sort((a, b) => b.start - a.start)
+    .reduce(
+      (currentContent, range) =>
+        currentContent.substring(0, range.start) +
+        currentContent.substring(range.end),
+      content,
+    )
+
   // Extract thinking deltas LAST (emitted by providers during extended thinking)
   // Done after tool/grounding extraction so thinking blocks don't accidentally
   // consume those end-of-stream markers.
-  const thinkingMarker = '__THINKING_DELTA__'
   let thinkingContent = ''
   let thinkingIndex: number
   while ((thinkingIndex = content.indexOf(thinkingMarker)) !== -1) {

@@ -22,12 +22,15 @@ import { describe, it, expect } from 'vitest'
 import type {
   LanguageModelV4,
   LanguageModelV4CallOptions,
+  LanguageModelV4FunctionTool,
+  LanguageModelV4ProviderTool,
   LanguageModelV4Usage,
 } from '@ai-sdk/provider'
 import { AiSdkProvider } from '@/lib/llm/ai-sdk/adapter'
-import { anthropicBinding } from '@/lib/llm/ai-sdk/bindings'
+import { anthropicBinding, googleBinding } from '@/lib/llm/ai-sdk/bindings'
 import type { AiSdkBinding, FullConfig } from '@/lib/llm/ai-sdk/adapter'
 import type { LLMMessage } from '@/lib/llm'
+import type { ToolDefinition } from '@/lib/llm/types'
 
 const USAGE: LanguageModelV4Usage = {
   inputTokens: {
@@ -55,6 +58,124 @@ describe('anthropicBinding.providerTools', () => {
       {} as FullConfig,
     )
     expect(withoutSearch).toBeUndefined()
+  })
+})
+
+describe('googleBinding web search grounding', () => {
+  it('registers the native google_search tool only when enableWebSearch is set', async () => {
+    const withSearch = await googleBinding.providerTools!({
+      enableWebSearch: true,
+    } as FullConfig)
+    expect(withSearch).toBeDefined()
+    expect(Object.keys(withSearch!)).toEqual(['google_search'])
+
+    const withoutSearch = await googleBinding.providerTools!(
+      {} as FullConfig,
+    )
+    expect(withoutSearch).toBeUndefined()
+  })
+
+  it('does not emit removed useSearchGrounding while preserving thinkingConfig', () => {
+    const googleThinking = { thinkingLevel: 'high' as const }
+    const options = googleBinding.providerOptions!({
+      enableWebSearch: true,
+      googleThinking,
+    } as FullConfig)
+
+    expect(options?.google).not.toHaveProperty('useSearchGrounding')
+    expect(options?.google).toHaveProperty('thinkingConfig', googleThinking)
+  })
+})
+
+describe('AiSdkProvider — native web search tool de-duplication', () => {
+  function toolDefinition(name: string): ToolDefinition {
+    return {
+      type: 'function',
+      function: {
+        name,
+        description: `${name} tool`,
+        parameters: {
+          type: 'object',
+          properties: {},
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  function fakeToolCaptureModel(
+    capture: (
+      tools:
+        | Array<LanguageModelV4FunctionTool | LanguageModelV4ProviderTool>
+        | undefined,
+    ) => void,
+  ): LanguageModelV4 {
+    return {
+      specificationVersion: 'v4',
+      provider: 'fake-provider',
+      modelId: 'fake-model',
+      supportedUrls: {},
+      async doGenerate(options: LanguageModelV4CallOptions) {
+        capture(options.tools)
+        return {
+          content: [{ type: 'text' as const, text: 'done' }],
+          finishReason: { unified: 'stop' as const, raw: 'stop' },
+          usage: USAGE,
+          warnings: [],
+        }
+      },
+      async doStream() {
+        throw new Error('not used in this test')
+      },
+    }
+  }
+
+  it('drops the client web_search fallback when a binding provides native search', async () => {
+    let seenTools:
+      | Array<LanguageModelV4FunctionTool | LanguageModelV4ProviderTool>
+      | undefined
+    const binding: AiSdkBinding = {
+      defaultModel: 'fake-google',
+      createModel: () =>
+        Promise.resolve(fakeToolCaptureModel((tools) => (seenTools = tools))),
+      providerTools: async () => {
+        const { google } = await import('@ai-sdk/google')
+        return { google_search: google.tools.googleSearch({}) }
+      },
+    }
+    const provider = new AiSdkProvider(() => Promise.resolve(binding))
+
+    await provider.chat(messages, {
+      tools: [toolDefinition('web_search'), toolDefinition('calculate')],
+    })
+
+    const toolNames = seenTools?.map((tool) => tool.name)
+    expect(toolNames).toEqual(expect.arrayContaining(['google_search']))
+    expect(toolNames).toEqual(expect.arrayContaining(['calculate']))
+    expect(toolNames).not.toContain('web_search')
+    expect(seenTools?.find((tool) => tool.name === 'calculate')?.type).toBe(
+      'function',
+    )
+  })
+
+  it('keeps the client web_search fallback when a binding has no provider tools', async () => {
+    let seenTools:
+      | Array<LanguageModelV4FunctionTool | LanguageModelV4ProviderTool>
+      | undefined
+    const binding: AiSdkBinding = {
+      defaultModel: 'fake-no-native-search',
+      createModel: () =>
+        Promise.resolve(fakeToolCaptureModel((tools) => (seenTools = tools))),
+    }
+    const provider = new AiSdkProvider(() => Promise.resolve(binding))
+
+    await provider.chat(messages, {
+      tools: [toolDefinition('web_search')],
+    })
+
+    const webSearchTool = seenTools?.find((tool) => tool.name === 'web_search')
+    expect(webSearchTool).toBeDefined()
+    expect(webSearchTool?.type).toBe('function')
   })
 })
 

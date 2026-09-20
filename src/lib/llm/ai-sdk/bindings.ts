@@ -188,8 +188,12 @@ export const googleBinding: AiSdkBinding = {
   providerOptions(config: FullConfig) {
     const google: Record<string, unknown> = {}
     if (config.googleThinking) google.thinkingConfig = config.googleThinking
-    if (config.enableWebSearch) google.useSearchGrounding = true
     return Object.keys(google).length ? { google } : undefined
+  },
+  async providerTools(config: FullConfig) {
+    if (!config.enableWebSearch) return undefined
+    const { google } = await import('@ai-sdk/google')
+    return { google_search: google.tools.googleSearch({}) }
   },
   validateApiKey: (apiKey) => openAiStyleValidate(GOOGLE_OPENAI_BASE, apiKey),
 }

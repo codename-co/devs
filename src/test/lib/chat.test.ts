@@ -142,6 +142,100 @@ describe('parseToolCallsFromStream', () => {
     expect(result.groundingMetadata?.isGrounded).toBe(true)
   })
 
+  it('extracts grounding metadata followed by tool calls', () => {
+    const metadata = {
+      isGrounded: true,
+      webResults: [
+        {
+          title: 'Source',
+          url: 'https://example.com/source',
+          snippet: 'Useful source',
+        },
+      ],
+    }
+    const toolCalls = [
+      {
+        id: 'call_1',
+        type: 'function',
+        function: { name: 'search_knowledge', arguments: '{"query":"devs"}' },
+      },
+    ]
+    const response =
+      'Visible answer\n__GROUNDING_METADATA__' +
+      JSON.stringify(metadata) +
+      '\n__TOOL_CALLS__' +
+      JSON.stringify(toolCalls)
+
+    const result = parseToolCallsFromStream(response)
+
+    expect(result.content).toBe('Visible answer')
+    expect(result.groundingMetadata).toEqual(metadata)
+    expect(result.toolCalls).toEqual(toolCalls)
+  })
+
+  it('extracts tool calls followed by grounding metadata', () => {
+    const metadata = {
+      isGrounded: true,
+      webResults: [
+        {
+          title: 'Reverse Source',
+          url: 'https://example.com/reverse',
+          snippet: 'Reverse order source',
+        },
+      ],
+    }
+    const toolCalls = [
+      {
+        id: 'call_2',
+        type: 'function',
+        function: { name: 'calculate', arguments: '{"expression":"2+2"}' },
+      },
+    ]
+    const response =
+      'Visible answer\n__TOOL_CALLS__' +
+      JSON.stringify(toolCalls) +
+      '\n__GROUNDING_METADATA__' +
+      JSON.stringify(metadata)
+
+    const result = parseToolCallsFromStream(response)
+
+    expect(result.content).toBe('Visible answer')
+    expect(result.toolCalls).toEqual(toolCalls)
+    expect(result.groundingMetadata).toEqual(metadata)
+  })
+
+  it('extracts thinking, grounding metadata, and tool calls together', () => {
+    const metadata = {
+      isGrounded: true,
+      webResults: [
+        {
+          title: 'Thinking Source',
+          url: 'https://example.com/thinking',
+          snippet: 'Thinking source',
+        },
+      ],
+    }
+    const toolCalls = [
+      {
+        id: 'call_3',
+        type: 'function',
+        function: { name: 'web_search', arguments: '{"query":"devs"}' },
+      },
+    ]
+    const response =
+      'Visible answer\n__THINKING_DELTA__Need sources\n__GROUNDING_METADATA__' +
+      JSON.stringify(metadata) +
+      '\n__TOOL_CALLS__' +
+      JSON.stringify(toolCalls)
+
+    const result = parseToolCallsFromStream(response)
+
+    expect(result.content).toBe('Visible answer')
+    expect(result.thinkingContent?.trim()).toBe('Need sources')
+    expect(result.groundingMetadata).toEqual(metadata)
+    expect(result.toolCalls).toEqual(toolCalls)
+  })
+
   it('handles all marker types together', () => {
     const toolCalls = [
       {

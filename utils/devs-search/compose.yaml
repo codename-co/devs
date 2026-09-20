@@ -3,21 +3,21 @@ services:
     image: searxng/searxng:latest
     container_name: devs-search
     volumes:
-      - ./settings.yml:/etc/searxng/settings.yml:ro
+      # Mounted read-write: the image entrypoint rewrites secret_key from
+      # SEARXNG_SECRET and chowns the file at startup.
+      - ./settings.yml:/etc/searxng/settings.yml
     environment:
-      - SEARXNG_BASE_URL=https://devs.new/api/search
+      # Overrides `server.secret_key` from settings.yml. Set in a .env file
+      # next to this compose file; never commit a real value.
+      - SEARXNG_SECRET=${SEARXNG_SECRET:-change-me-in-production}
     restart: unless-stopped
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.search.rule: Host(`devs.new`) && PathPrefix(`/api/search`)
-      traefik.http.routers.search.entrypoints: web
-      traefik.http.middlewares.search-strip.stripprefix.prefixes: /api/search
-      traefik.http.routers.search.middlewares: search-strip
-      traefik.http.services.search.loadbalancer.server.port: 8080
     networks:
-      - external
+      external:
+        # Canonical production hostname is the container_name `devs-search`.
+        # Keep `searxng` as a backwards-compatible alias for older proxies.
+        aliases:
+          - searxng
 
 networks:
   external:
     external: true
-

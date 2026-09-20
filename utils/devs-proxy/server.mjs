@@ -36,6 +36,7 @@
  * Environment variables:
  *   - HOST: Bind address (default: 0.0.0.0)
  *   - PORT: Listen port (default: 3001)
+ *   - SEARXNG_URL: SearXNG backend URL (default: http://devs-search:8080)
  */
 
 import http from 'node:http'
@@ -46,6 +47,10 @@ const HOST = process.env.HOST || '0.0.0.0'
 const PORT = process.env.PORT || 3001
 
 const PROXY_PATH = '/api/proxy'
+const SEARCH_PATH = '/api/search'
+
+// SearXNG backend URL (internal Docker network or env override)
+const SEARXNG_URL = process.env.SEARXNG_URL || 'http://devs-search:8080'
 
 /**
  * Validates that the request origin is allowed.
@@ -167,8 +172,8 @@ async function handleRequest(req, res) {
     return
   }
 
-  // Only handle requests to the cors proxy endpoint
-  if (!reqUrl.startsWith(PROXY_PATH)) {
+  // Only handle requests to the cors proxy or search endpoint
+  if (!reqUrl.startsWith(PROXY_PATH) && !reqUrl.startsWith(SEARCH_PATH)) {
     res.writeHead(404, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'Not found' }))
     return
@@ -192,6 +197,80 @@ async function handleRequest(req, res) {
     res.end()
     return
   }
+
+  // ── Search endpoint: proxy to SearXNG ──────────────────────────────────
+  if (reqUrl.startsWith(SEARCH_PATH)) {
+    // Require a browser Origin. Unlike the CORS proxy (which is harmless
+    // without one), an origin-less search endpoint is a free public search
+    // API: it invites abuse and gets the instance CAPTCHA-banned by upstream
+    // engines.
+    if (!origin) {
+      res.writeHead(403, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Forbidden: Origin required' }))
+      return
+    }
+
+    try {
+      // Never concatenate caller-controlled path onto the backend URL: a path
+      // such as `/api/search@evil.com/x` would make `new URL()` read
+      // `devs-search:8080` as userinfo and `evil.com` as the host (SSRF).
+      // Instead, discard the incoming path and rebuild the request from an
+      // allow-list of query parameters.
+      const incoming = new URL(reqUrl, 'http://localhost')
+      const allowed = [
+        'q',
+        'format',
+        'language',
+        'pageno',
+        'time_range',
+        'categories',
+        'safesearch',
+      ]
+      const search = new URLSearchParams()
+      for (const key of allowed) {
+        const value = incoming.searchParams.get(key)
+        if (value !== null) search.set(key, value)
+      }
+
+      if (!search.get('q')) {
+        res.writeHead(400, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': origin,
+        })
+        res.end(JSON.stringify({ error: 'Missing q parameter' }))
+        return
+      }
+
+      // Only the JSON API is exposed — never the HTML UI.
+      search.set('format', 'json')
+
+      const targetUrl = new URL('/search', SEARXNG_URL)
+      targetUrl.search = search.toString()
+
+      const response = await fetchUrl(targetUrl.toString(), { method: 'GET' })
+
+      const responseHeaders = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      }
+      if (origin) {
+        responseHeaders['Access-Control-Allow-Origin'] = origin
+      }
+
+      res.writeHead(response.status, responseHeaders)
+      res.end(response.body)
+    } catch {
+      const errorHeaders = { 'Content-Type': 'application/json' }
+      if (origin) {
+        errorHeaders['Access-Control-Allow-Origin'] = origin
+      }
+      res.writeHead(500, errorHeaders)
+      res.end(JSON.stringify({ error: 'Search unavailable' }))
+    }
+    return
+  }
+
+  // ── CORS proxy endpoint ────────────────────────────────────────────────
 
   // Parse the URL parameter
   const queryString = reqUrl.slice(PROXY_PATH.length)

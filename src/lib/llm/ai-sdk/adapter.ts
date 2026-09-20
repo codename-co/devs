@@ -228,8 +228,22 @@ export class AiSdkProvider implements LLMProviderInterface {
   ): Promise<ToolSet | undefined> {
     const definedTools = toAiTools(config?.tools, ai.tool, ai.jsonSchema)
     const providerTools = await binding.providerTools?.(config ?? {})
-    if (!definedTools && !providerTools) return undefined
-    return { ...definedTools, ...providerTools }
+    const providerToolNames = new Set(Object.keys(providerTools ?? {}))
+    if (!definedTools && providerToolNames.size === 0) return undefined
+    if (providerToolNames.size === 0) return definedTools
+
+    // Native provider search supersedes DEVS' client `web_search` fallback:
+    // remove explicit key collisions and always drop the fallback whenever a
+    // binding contributes hosted tools.
+    const clientTools = definedTools
+      ? (Object.fromEntries(
+          Object.entries(definedTools).filter(
+            ([name]) => !providerToolNames.has(name) && name !== 'web_search',
+          ),
+        ) as ToolSet)
+      : undefined
+
+    return { ...clientTools, ...providerTools }
   }
 
   async chat(

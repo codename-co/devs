@@ -13,6 +13,7 @@ node_modules
 /public/extensions/components/
 /public/methodologies/manifest.json
 /public/methodologies/*.methodology.json
+/public/wasm/
 /public/sitemap.xml
 /test-results*
 /work
